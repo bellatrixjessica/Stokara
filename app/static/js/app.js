@@ -90,6 +90,11 @@ function angka(n) {
   return Number(n).toLocaleString("id-ID");
 }
 
+// Angka dengan satu desimal: 15.6 -> "15,6"
+function desimal(n) {
+  return Number(n).toLocaleString("id-ID", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+}
+
 // Format Rupiah: 15000 -> "Rp 15.000"
 function rupiah(n) {
   return "Rp " + angka(n);

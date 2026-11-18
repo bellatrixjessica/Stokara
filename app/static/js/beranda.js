@@ -26,6 +26,7 @@ webix.ready(function () {
   // Kartu menu: semua menu kecuali Beranda
   const kartuMenu = {
     view: "dataview",
+    id: "kartuMenu",
     css: "kartu-menu",
     borderless: true,
     select: false,
@@ -34,8 +35,14 @@ webix.ready(function () {
     type: { width: "auto", height: 116 }, // "auto" = lebar kartu menyesuaikan layar
     data: DATA.menu.filter((m) => m.id !== "beranda"),
     template: function (m) {
+      // Label kecil di pojok kanan atas, contoh "2 menunggu persetujuan"
+      let label = "";
+      for (const b of m.label || []) {
+        label += '<span class="badge ' + b.warna + '">' + aman(b.teks) + "</span>";
+      }
       return (
         '<div class="kartu-isi">' +
+        '<div class="kartu-label">' + label + "</div>" +
         '<span class="' + m.ikon + '"></span>' +
         "<b>" + aman(m.judul) + "</b>" +
         "<small>" + aman(m.keterangan) + "</small>" +
@@ -56,4 +63,16 @@ webix.ready(function () {
       kartuMenu,
     ],
   });
+
+  muatLabel();
 });
+
+// Ambil angka "perlu ditindaklanjuti" lalu tempel ke kartu menu yang sesuai
+async function muatLabel() {
+  const data = await api("GET", "/api/beranda");
+  if (!data) return;
+  const kartu = $$("kartuMenu");
+  for (const idMenu in data) {
+    if (kartu.exists(idMenu)) kartu.updateItem(idMenu, { label: data[idMenu] });
+  }
+}

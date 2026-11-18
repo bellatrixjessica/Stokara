@@ -25,6 +25,11 @@ class Config:
     # Identitas gudang. Ditampilkan setelah pengguna login.
     NAMA_BRANCH = "Branch Semarang"
 
+    # Angka untuk dashboard insight (bisa diubah tanpa menyentuh rumus)
+    PERIODE_HARI = 30           # insight dihitung dari 30 hari terakhir
+    HARI_PENGAMAN = 2           # safety stock = demand per hari x 2 hari
+    PERIODE_CADANGAN_HARI = 7   # saran restock mencukupi lead time + 7 hari
+
 
 class TestConfig(Config):
     """Dipakai saat menjalankan pytest: database palsu di memori."""
