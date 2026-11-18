@@ -31,7 +31,8 @@ webix.ready(function () {
   };
 
   const toolbar = [
-    { view: "search", id: "cari", placeholder: "Cari kode, nama, atau kategori...", maxWidth: 320, on: { onTimedKeyPress: saring } },
+    // Pencarian dikerjakan server: kode -> awalan kode, kata -> text index MongoDB
+    { view: "search", id: "cari", placeholder: "Cari kode, nama, atau kategori...", maxWidth: 320, on: { onTimedKeyPress: muatData } },
     {},
     { view: "button", value: "Muat ulang", css: "tombol-garis", width: 110, hidden: LAYAR_KECIL, click: muatData },
   ];
@@ -54,16 +55,11 @@ function kolomTersedia(p) {
 }
 
 async function muatData() {
-  const data = await api("GET", "/api/stok");
+  const kata = $$("cari").getValue().trim();
+  const data = await api("GET", "/api/stok" + (kata ? "?cari=" + encodeURIComponent(kata) : ""));
   if (!data) return;
   $$("tabel").clearAll();
   $$("tabel").parse(data);
-  saring();
-}
-
-function saring() {
-  const kata = $$("cari").getValue().toLowerCase();
-  $$("tabel").filter((p) => (p.kode + " " + p.nama + " " + p.kategori).toLowerCase().includes(kata));
 }
 
 // ---------- Jendela riwayat mutasi ----------

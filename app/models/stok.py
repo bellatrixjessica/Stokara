@@ -23,6 +23,8 @@ Bentuk dokumen mutasi_stok:
     "waktu": datetime (UTC)
 }
 """
+import re
+
 from pymongo import ReturnDocument
 
 from app.db import get_db
@@ -103,11 +105,26 @@ def stok_tersedia(produk_id):
     return produk["stok"] - qty_dipesan().get(produk_id, 0)
 
 
-def daftar_stok():
-    """Semua produk aktif dengan stok fisik, dipesan, dan tersedia."""
+def filter_cari(cari):
+    """Filter pencarian produk.
+
+    - Ada angkanya (contoh "P-0001", "0004") -> cari awalan kode (memakai unique index kode)
+    - Kata biasa (contoh "minyak", "sembako") -> cari di nama & kategori memakai TEXT INDEX
+    """
+    if any(huruf.isdigit() for huruf in cari):
+        return {"kode": {"$regex": "^" + re.escape(cari.upper())}}
+    return {"$text": {"$search": cari}}
+
+
+def daftar_stok(cari=None):
+    """Produk aktif dengan stok fisik, dipesan, dan tersedia. cari = kata kunci (opsional)."""
+    filter_ = {"aktif": True}
+    if cari:
+        filter_.update(filter_cari(cari))
+
     dipesan = qty_dipesan()
     hasil = []
-    for p in get_db().master_produk.find({"aktif": True}).sort("kode", 1):
+    for p in get_db().master_produk.find(filter_).sort("kode", 1):
         jumlah_dipesan = dipesan.get(p["_id"], 0)
         hasil.append({
             "id": str(p["_id"]),
