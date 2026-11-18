@@ -1,0 +1,27 @@
+{#
+  Kerangka dasar SEMUA halaman.
+  Jinja hanya menyiapkan "panggung": memuat Webix, ikon, CSS, dan data awal.
+  Tampilannya (form, tabel, menu) dibuat oleh Webix di folder static/js/.
+#}
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block judul %}{% endblock %} · Stokara</title>
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='img/logo-stokara.svg') }}">
+  <meta name="theme-color" content="#26215C">
+
+  {# Webix 11.4 dengan skin Willow #}
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/webix@11.4.0/skins/willow.min.css">
+  {# Ikon Material Design, dipakai dengan icon: "mdi mdi-nama-ikon" #}
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css">
+  {# CSS Stokara: warna, sudut, bayangan. Ukuran dan posisi diatur Webix. #}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+</head>
+<body>
+  <script src="https://cdn.jsdelivr.net/npm/webix@11.4.0/webix.min.js"></script>
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+  {% block script %}{% endblock %}
+</body>
+</html>

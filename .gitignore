@@ -1,0 +1,15 @@
+# Rahasia (password database, secret key)
+.env
+
+# Virtual environment
+venv/
+
+# File sementara Python
+__pycache__/
+.pytest_cache/
+
+# Deploy
+.vercel/
+
+# Pengaturan Claude Code lokal (bukan bagian aplikasi)
+.claude/

@@ -1,0 +1,23 @@
+{#
+  Halaman error (403, 404, 500). Cukup Jinja + CSS, tanpa Webix,
+  supaya tetap tampil walaupun JavaScript gagal dimuat.
+#}
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ judul }} · Stokara</title>
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='img/logo-stokara.svg') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+</head>
+<body class="halaman-error">
+  <div class="kotak-error">
+    <img src="{{ url_for('static', filename='img/logo-stokara.svg') }}" width="64" height="64" alt="Logo Stokara">
+    <div class="kode-error">{{ kode }}</div>
+    <h1>{{ judul }}</h1>
+    <p>{{ pesan }}</p>
+    <a class="tombol-error" href="/">Kembali ke beranda</a>
+  </div>
+</body>
+</html>

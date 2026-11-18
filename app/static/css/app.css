@@ -1,0 +1,799 @@
+/* =====================================================================
+ * Stokara – CSS aplikasi
+ *
+ * Webix mengatur UKURAN dan POSISI komponen.
+ * File ini hanya mengatur WARNA, SUDUT, BAYANGAN, dan HURUF
+ * supaya tampilan Webix senada dengan logo Stokara.
+ * ===================================================================== */
+
+:root {
+  --ungu-900: #26215C;   /* sidebar, panel login */
+  --ungu-800: #3C3489;   /* logo, kartu sambutan */
+  --ungu-600: #534AB7;   /* tombol utama */
+  --ungu-400: #7F77DD;
+  --ungu-200: #CECBF6;
+  --ungu-50:  #EEEDFE;   /* latar terang */
+  --amber:    #EF9F27;   /* penanda menu aktif */
+  --latar:    #F5F4FA;   /* latar halaman */
+  --teks:     #1D1B33;
+  --redup:    #6B6886;
+  --garis:    #E6E4F0;
+}
+
+/* Huruf bawaan sistem: langsung tersedia, tidak perlu diunduh. */
+body,
+.webix_view,
+.webix_el_box input,
+.webix_button,
+.webix_message {
+  font-family: "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
+}
+
+body {
+  margin: 0;
+  background: var(--latar);
+  color: var(--teks);
+}
+
+/* ---------- Tombol & input: warna ungu Stokara ---------- */
+
+.webix_primary .webix_button {
+  background: var(--ungu-600);
+  border-color: var(--ungu-600);
+  font-weight: 600;
+}
+
+.webix_el_button.webix_primary .webix_button:hover,
+.webix_el_button.webix_primary .webix_button:focus,
+.webix_el_button.webix_primary .webix_button:active {
+  background: var(--ungu-800);
+}
+
+/* Tombol - dan + pada counter */
+.webix_el_counter .webix_inp_counter_prev,
+.webix_el_counter .webix_inp_counter_next {
+  background: var(--ungu-600);
+}
+
+.webix_el_counter .webix_inp_counter_prev:hover,
+.webix_el_counter .webix_inp_counter_next:hover {
+  background: var(--ungu-800);
+}
+
+/* Tombol putih bergaris, contoh: tombol Keluar */
+.tombol-garis .webix_button {
+  background: #fff;
+  border: 1px solid var(--garis);
+  color: var(--teks);
+}
+
+.tombol-garis .webix_button:hover {
+  background: var(--ungu-50);
+}
+
+.webix_el_box input:focus,
+.webix_el_box input:focus-visible {
+  border-color: var(--ungu-600);
+}
+
+/* ===================================================================== */
+/* Header                                                                */
+/* ===================================================================== */
+
+.app-header.webix_toolbar {
+  background: #fff;
+  border-bottom: 1px solid var(--garis) !important;
+}
+
+.app-header .webix_icon_button .webix_icon {
+  color: var(--ungu-800);
+}
+
+.app-brand .webix_template {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0;
+  font-size: 17px;
+  color: var(--ungu-900);
+}
+
+.app-brand img {
+  width: 32px;
+  height: 32px;
+}
+
+.app-branch {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ungu-600);
+  background: var(--ungu-50);
+  padding: 2px 9px;
+  border-radius: 99px;
+}
+
+.app-akun .webix_template {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0;
+  font-size: 13px;
+  line-height: 1.3;
+}
+
+.app-avatar {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--ungu-50);
+  color: var(--ungu-800);
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+}
+
+.app-akun-teks {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.app-akun small {
+  display: block;
+  color: var(--redup);
+  font-size: 11px;
+}
+
+/* ===================================================================== */
+/* Sidebar                                                               */
+/* ===================================================================== */
+
+.app-sidebar.webix_sidebar,
+.app-sidebar .webix_tree_item {
+  background: var(--ungu-900);
+}
+
+.app-sidebar .webix_tree_branch_1 {
+  border-bottom: none;
+}
+
+.app-sidebar .webix_tree_item,
+.app-sidebar .webix_tree_item span,
+.app-sidebar .webix_tree_item .webix_icon {
+  color: #C9C6E8;
+}
+
+.app-sidebar.webix_sidebar_expanded .webix_tree_item:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.app-sidebar .webix_tree_item.webix_selected,
+.app-sidebar .webix_tree_item.webix_selected span {
+  background: rgba(127, 119, 221, 0.22);
+  color: #fff;
+}
+
+/* Ditulis lebih spesifik supaya mengalahkan garis biru bawaan skin Willow */
+.app-sidebar.webix_sidebar .webix_tree_item.webix_selected {
+  box-shadow: inset 3px 0 0 var(--amber);
+}
+
+.app-sidebar .webix_tree_item.webix_selected .webix_icon {
+  color: var(--amber);
+}
+
+/* ===================================================================== */
+/* Area isi halaman                                                      */
+/* ===================================================================== */
+
+.app-konten,
+.app-konten .webix_layout_space,
+.app-konten .webix_layout_wide,
+.app-konten > .webix_template,
+.label-seksi,
+.label-seksi .webix_template {
+  background: var(--latar);
+}
+
+.label-seksi .webix_template {
+  padding: 18px 2px 0;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: var(--redup);
+}
+
+/* Judul halaman (dipakai mulai tahap 4) */
+.judul-halaman,
+.judul-halaman .webix_template {
+  background: var(--latar);
+  padding: 0 0 12px;
+}
+
+.judul-halaman h2 {
+  margin: 0;
+  font-size: 20px;
+}
+
+.judul-halaman p {
+  margin: 4px 0 0;
+  color: var(--redup);
+  font-size: 13px;
+}
+
+/* ---------- Kartu tabel (toolbar + datatable) ---------- */
+
+.kartu-tabel {
+  background: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.06), 0 1px 3px rgba(16, 24, 40, 0.08);
+}
+
+.toolbar-tabel.webix_toolbar {
+  background: #fff;
+  border-bottom: 1px solid var(--garis) !important;
+}
+
+.tabel.webix_dtable {
+  border: none;
+}
+
+.tabel .webix_hcell {
+  background: #FAFAFD;
+  color: var(--redup);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.tabel .webix_cell {
+  font-size: 13px;
+  color: var(--teks);
+}
+
+.tabel .webix_row_select,
+.tabel .webix_cell.webix_row_select {
+  background: var(--ungu-50);
+}
+
+.tabel .kanan,
+.tabel .webix_hcell.kanan {
+  text-align: right;
+}
+
+/* Sel berisi dua baris teks (nama + keterangan kecil di bawahnya).
+   Webix memasang css kolom di pembungkus kolom, jadi selnya ada di dalamnya. */
+.tabel .dua-baris .webix_cell {
+  line-height: 18px !important; /* Webix mengisi line-height setinggi baris, jadi perlu !important */
+  padding-top: 7px;
+}
+
+/* Tulisan kecil abu-abu di bawah teks utama, contoh: kode produk */
+.kecil {
+  display: block;
+  color: var(--redup);
+  font-size: 11px;
+  line-height: 1.3;
+}
+
+/* Angka naik (hijau) dan turun (merah), contoh perubahan stok */
+.naik  { color: #067647; font-weight: 600; }
+.turun { color: #B42318; font-weight: 600; }
+
+/* Label kecil di dalam form, contoh: "Produk yang diterima" */
+.label-kecil .webix_el_box {
+  font-weight: 600;
+  font-size: 13px;
+}
+
+/* Info dokumen di jendela detail (4 kolom: Supplier, Tanggal, ...) */
+.info-dokumen .webix_template {
+  padding: 0;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  font-size: 13px;
+}
+
+.info-grid span {
+  display: block;
+  font-size: 11px;
+  color: var(--redup);
+}
+
+.info-grid .penuh {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 767px) {
+  .info-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* ---------- Label status ---------- */
+
+.badge {
+  display: inline-block;
+  padding: 2px 9px;
+  border-radius: 99px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 18px;
+}
+
+.b-hijau  { background: #ECFDF3; color: #067647; }
+.b-merah  { background: #FEF3F2; color: #B42318; }
+.b-oranye { background: #FFF4E5; color: #B54708; }
+.b-biru   { background: #EFF8FF; color: #175CD3; }
+.b-ungu   { background: var(--ungu-50); color: var(--ungu-800); }
+.b-amber  { background: #FFF6E5; color: #93530A; }
+.b-abu    { background: #F2F4F7; color: #475467; }
+
+/* ---------- Tombol aksi di baris tabel ---------- */
+
+.aksi {
+  cursor: pointer;
+  color: var(--ungu-600);
+  font-weight: 600;
+  margin-right: 14px;
+}
+
+.aksi:hover {
+  text-decoration: underline;
+}
+
+.aksi.merah { color: #B42318; }
+.aksi.hijau { color: #067647; }
+
+.aksi.mdi {
+  font-size: 18px;
+  margin-right: 10px;
+}
+
+/* ---------- Jendela form ---------- */
+
+.jendela.webix_window {
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.jendela-head.webix_toolbar {
+  background: #fff;
+  border-bottom: 1px solid var(--garis) !important;
+}
+
+.jendela-head .webix_el_label {
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.info-form .webix_template {
+  padding: 0 0 6px;
+  font-size: 13px;
+  color: var(--redup);
+}
+
+/* ---------- Tombol merah (Tolak, Batalkan) dan tombol teks ---------- */
+
+.tombol-bahaya .webix_button {
+  background: #FEF3F2;
+  border: 1px solid #FDA29B;
+  color: #B42318;
+  font-weight: 600;
+}
+
+.tombol-bahaya .webix_button:hover {
+  background: #FEE4E2;
+}
+
+.tombol-teks .webix_button {
+  background: transparent;
+  border: none;
+  color: var(--ungu-600);
+  font-size: 12px;
+}
+
+.tombol-teks .webix_button:hover {
+  text-decoration: underline;
+}
+
+/* ---------- Permintaan ---------- */
+
+.judul-jendela .webix_template {
+  padding: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  font-size: 15px;
+}
+
+/* Kolom "Disetujui" yang bisa diketik (hanya saat Kepala Gudang boleh mengubah) */
+.sedang-edit .kolom-edit .webix_cell {
+  background: var(--ungu-50);
+  font-weight: 700;
+  cursor: text;
+}
+
+.kotak-alasan {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #FEF3F2;
+  color: #B42318;
+  font-size: 13px;
+}
+
+.riwayat-judul {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--redup);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.riwayat {
+  display: grid;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--teks);
+  border-left: 2px solid var(--ungu-200);
+  padding-left: 12px;
+}
+
+.teks-amber {
+  color: #93530A;
+}
+
+/* ---------- Notifikasi (lonceng) ---------- */
+
+.app-lonceng .webix_icon {
+  color: var(--ungu-600);
+}
+
+.app-lonceng .webix_badge {
+  background: var(--amber);
+  color: #fff;
+  font-weight: 700;
+}
+
+.popup-notif.webix_popup {
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 12px 32px rgba(38, 33, 92, 0.22);
+}
+
+.notif-head.webix_toolbar {
+  background: #fff;
+  border-bottom: 1px solid var(--garis) !important;
+}
+
+.notif-head .webix_el_label {
+  font-weight: 700;
+}
+
+.daftar-notif .webix_list_item {
+  padding: 0;
+  border-bottom: 1px solid #F0EFF6;
+  cursor: pointer;
+}
+
+.notif-item {
+  display: flex;
+  gap: 10px;
+  height: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+  padding: 11px 14px;
+  font-size: 13px;
+  line-height: 1.4;
+  white-space: normal;
+}
+
+.notif-item.baru {
+  background: #F8F7FE;
+}
+
+.notif-item small {
+  display: block;
+  color: var(--redup);
+  font-size: 12px;
+}
+
+.notif-titik {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  margin-top: 6px;
+  border-radius: 50%;
+  background: #D0D5DD;
+}
+
+.notif-item.baru .notif-titik {
+  background: var(--ungu-600);
+}
+
+.notif-kosong {
+  padding: 18px 14px;
+  color: var(--redup);
+  font-size: 13px;
+}
+
+/* ---------- Dialog konfirmasi (webix.confirm) ---------- */
+
+.webix_modal_box {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.webix_modal_box .webix_popup_title {
+  box-shadow: inset 0 4px 0 var(--ungu-600); /* garis atas: ungu, bukan biru */
+}
+
+.webix_modal_box .webix_popup_controls .webix_popup_button {
+  color: var(--ungu-600);
+  border: 1px solid var(--ungu-600);
+  box-shadow: none;
+  border-radius: 6px;
+}
+
+.webix_modal_box .webix_popup_controls .webix_popup_button.confirm {
+  background: var(--ungu-600);
+  color: #fff;
+}
+
+/* Kartu sambutan di beranda */
+.kartu-sambutan,
+.kartu-sambutan .webix_template {
+  background: var(--ungu-800);
+  border-radius: 12px;
+  color: #fff;
+}
+
+.kartu-sambutan .webix_template {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 22px;
+}
+
+.sambutan-kecil {
+  font-size: 13px;
+  opacity: 0.8;
+}
+
+.sambutan-nama {
+  font-size: 22px;
+  font-weight: 700;
+  margin: 2px 0 8px;
+}
+
+.sambutan-badge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 9px;
+  border-radius: 99px;
+  background: rgba(255, 255, 255, 0.18);
+  margin-right: 6px;
+}
+
+.sambutan-info {
+  font-size: 13px;
+  opacity: 0.9;
+}
+
+/* Kartu menu di beranda (dataview) */
+.kartu-menu,
+.kartu-menu .webix_scroll_cont {
+  background: var(--latar);
+}
+
+.kartu-menu .webix_dataview_item {
+  border: none !important;
+  background: transparent;
+  padding: 7px;
+}
+
+.kartu-menu .webix_dataview_item.webix_selected {
+  background: transparent;
+}
+
+.kartu-isi {
+  height: 100%;
+  box-sizing: border-box;
+  background: #fff;
+  border-radius: 12px;
+  padding: 14px 16px;
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.06), 0 1px 3px rgba(16, 24, 40, 0.08);
+  cursor: pointer;
+  transition: box-shadow 0.15s;
+}
+
+.kartu-isi:hover {
+  box-shadow: 0 6px 16px rgba(38, 33, 92, 0.14);
+}
+
+.kartu-isi .mdi {
+  display: inline-grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  background: var(--ungu-50);
+  color: var(--ungu-800);
+  font-size: 18px;
+}
+
+.kartu-isi b {
+  display: block;
+  margin: 8px 0 2px;
+  font-size: 14px;
+}
+
+.kartu-isi small {
+  display: block;
+  color: var(--redup);
+  font-size: 12px;
+  line-height: 1.4;
+  white-space: normal;
+}
+
+/* ===================================================================== */
+/* Halaman login                                                         */
+/* ===================================================================== */
+
+.login-kiri,
+.login-kiri .webix_template {
+  background: var(--ungu-900);
+  color: #fff;
+}
+
+.login-kiri .webix_template {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 48px;
+  box-sizing: border-box;
+}
+
+.login-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.login-judul-besar {
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1.2;
+  margin: 0 0 12px;
+}
+
+.login-kiri p {
+  color: #C9C6E8;
+  line-height: 1.6;
+  margin: 0;
+  white-space: normal;
+}
+
+.login-fitur {
+  margin-top: 26px;
+  display: grid;
+  gap: 12px;
+  font-size: 14px;
+  color: #E4E2F7;
+}
+
+.login-fitur div {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.login-fitur .mdi {
+  display: inline-grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: rgba(127, 119, 221, 0.3);
+  font-size: 16px;
+}
+
+.login-hak-cipta {
+  font-size: 12px;
+  color: #9A97C4;
+}
+
+.login-kanan,
+.login-kanan .webix_layout_space,
+.login-form,
+.login-judul .webix_template {
+  background: #fff;
+}
+
+.login-judul .webix_template {
+  padding: 0;
+}
+
+.login-judul h1 {
+  font-size: 22px;
+  margin: 0 0 4px;
+}
+
+.login-judul p {
+  color: var(--redup);
+  margin: 0;
+  font-size: 14px;
+}
+
+/* Versi ponsel: panel ungu lebih pendek */
+.login-kiri.kecil .webix_template {
+  padding: 26px 22px;
+  justify-content: flex-start;
+  gap: 18px;
+}
+
+.login-kiri.kecil .login-judul-besar {
+  font-size: 19px;
+  margin: 0;
+}
+
+/* ===================================================================== */
+/* Halaman error (tanpa Webix)                                           */
+/* ===================================================================== */
+
+.halaman-error {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  font-family: "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
+}
+
+.kotak-error {
+  text-align: center;
+  background: #fff;
+  padding: 40px 48px;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(38, 33, 92, 0.1);
+  max-width: 420px;
+  margin: 16px;
+}
+
+.kode-error {
+  font-size: 48px;
+  font-weight: 800;
+  color: var(--ungu-600);
+  margin-top: 10px;
+}
+
+.kotak-error h1 {
+  font-size: 20px;
+  margin: 4px 0 8px;
+}
+
+.kotak-error p {
+  color: var(--redup);
+  margin: 0 0 22px;
+}
+
+.tombol-error {
+  display: inline-block;
+  background: var(--ungu-600);
+  color: #fff;
+  text-decoration: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+}

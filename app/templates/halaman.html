@@ -1,0 +1,16 @@
+{#
+  Dipakai semua halaman setelah login.
+  - DATA      : data dari Flask (pengguna, menu, branch). Filter tojson membuatnya
+                aman ditaruh di <script> (karakter < > & di-escape).
+  - layout.js : membuat header + sidebar + lonceng notifikasi.
+  - js        : daftar file isi halaman, contoh ["beranda.js"].
+#}
+{% extends "base.html" %}
+{% block judul %}{{ judul }}{% endblock %}
+{% block script %}
+  <script>const DATA = {{ data | tojson }};</script>
+  <script src="{{ url_for('static', filename='js/layout.js') }}"></script>
+  {% for file in js %}
+  <script src="{{ url_for('static', filename='js/' + file) }}"></script>
+  {% endfor %}
+{% endblock %}
