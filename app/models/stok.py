@@ -9,7 +9,7 @@ Stok fisik HANYA berubah lewat tiga fungsi di file ini, dan setiap perubahan
 dicatat di mutasi_stok:
 - tambah_stok()    -> MASUK  (barang masuk dari supplier)
 - kurangi_stok()   -> KELUAR (pengiriman ke toko)
-- sesuaikan_stok() -> ADJUST (hasil stock opname)
+- koreksi_stok()   -> ADJUST (selisih hasil stock opname)
 
 Bentuk dokumen mutasi_stok:
 {
@@ -70,14 +70,22 @@ def kurangi_stok(produk_id, qty, referensi, keterangan, user):
     catat_mutasi(produk, "KELUAR", -qty, produk["stok"], referensi, keterangan, user)
 
 
-def sesuaikan_stok(produk_id, stok_baru, referensi, keterangan, user):
-    produk_lama = get_db().master_produk.find_one_and_update(
-        {"_id": produk_id},
-        {"$set": {"stok": stok_baru}},
-        return_document=ReturnDocument.BEFORE,  # kembalikan data SEBELUM diubah
+def koreksi_stok(produk_id, selisih, referensi, keterangan, user):
+    """Tambah atau kurangi stok sebesar selisih hasil opname (bisa positif atau negatif).
+
+    Yang dikoreksi adalah SELISIHNYA, bukan menimpa stok dengan angka hitungan.
+    Jadi barang yang masuk atau keluar setelah dihitung tetap terhitung.
+    """
+    syarat = {"_id": produk_id}
+    if selisih < 0:
+        syarat["stok"] = {"$gte": -selisih}  # sama seperti kurangi_stok: tidak boleh minus
+
+    produk = get_db().master_produk.find_one_and_update(
+        syarat, {"$inc": {"stok": selisih}}, return_document=ReturnDocument.AFTER
     )
-    perubahan = stok_baru - produk_lama["stok"]
-    catat_mutasi(produk_lama, "ADJUST", perubahan, stok_baru, referensi, keterangan, user)
+    if produk is None:
+        raise ValidasiError("Stok fisik saat ini lebih kecil dari selisih opname. Hitung ulang produk ini.")
+    catat_mutasi(produk, "ADJUST", selisih, produk["stok"], referensi, keterangan, user)
 
 
 def qty_dipesan():

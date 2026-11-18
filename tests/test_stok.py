@@ -45,15 +45,23 @@ def test_stok_tidak_bisa_minus(app, produk):
         assert get_db().mutasi_stok.count_documents({"jenis": "KELUAR"}) == 0  # tidak tercatat
 
 
-def test_sesuaikan_stok_mencatat_selisih(app, produk):
+def test_koreksi_stok_mencatat_selisih(app, produk):
     with app.app_context():
         model_stok.tambah_stok(produk["minyak"], 50, "BM-1", "-", staff())
-        model_stok.sesuaikan_stok(produk["minyak"], 47, "OPN-1", "Hasil opname", staff())
+        model_stok.koreksi_stok(produk["minyak"], -3, "OPN-1", "Hasil opname", staff())
 
         assert stok_fisik(produk["minyak"]) == 47
         mutasi = get_db().mutasi_stok.find_one({"jenis": "ADJUST"})
         assert mutasi["perubahan"] == -3
         assert mutasi["stok_sebelum"] == 50
+
+
+def test_koreksi_stok_tidak_boleh_membuat_minus(app, produk):
+    with app.app_context():
+        model_stok.tambah_stok(produk["minyak"], 2, "BM-1", "-", staff())
+        with pytest.raises(ValidasiError):
+            model_stok.koreksi_stok(produk["minyak"], -3, "OPN-1", "-", staff())
+        assert stok_fisik(produk["minyak"]) == 2
 
 
 def test_stok_tersedia_dikurangi_qty_disetujui(app, produk):
