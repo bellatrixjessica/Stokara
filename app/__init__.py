@@ -31,6 +31,7 @@ def create_app(config_class=Config):
     from app.routes.notifikasi import bp as notifikasi_bp
     from app.routes.opname import bp as opname_bp
     from app.routes.dashboard import bp as dashboard_bp
+    from app.routes.laporan import bp as laporan_bp
     app.register_blueprint(umum_bp)
     app.register_blueprint(auth_bp)
     app.register_blueprint(toko_bp)
@@ -43,6 +44,7 @@ def create_app(config_class=Config):
     app.register_blueprint(notifikasi_bp)
     app.register_blueprint(opname_bp)
     app.register_blueprint(dashboard_bp)
+    app.register_blueprint(laporan_bp)
 
     # Semua ValidasiError di route mana pun diubah menjadi respon 400.
     @app.errorhandler(ValidasiError)

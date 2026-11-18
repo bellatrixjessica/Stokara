@@ -4,12 +4,14 @@ Prinsipnya: setiap data dari browser dianggap belum aman sampai dicek
 tipenya, isinya, dan panjangnya.
 """
 import re
+from datetime import datetime
 
 from bson import ObjectId
 from flask import abort, request
 
 POLA_KODE = re.compile(r"^[A-Z0-9-]{2,20}$")        # contoh: TK-01, P-0001
 POLA_USERNAME = re.compile(r"^[a-z0-9._]{3,30}$")   # contoh: toko.salatiga01
+POLA_TANGGAL = re.compile(r"^\d{4}-\d{2}-\d{2}$")    # contoh: 2026-11-19
 
 
 class ValidasiError(Exception):
@@ -144,6 +146,17 @@ def daftar_item(data, key="items", maks=50, qty_minimal=1):
         sudah_ada.add(produk_id)
         hasil.append({"produk_id": produk_id, "qty": qty})
     return hasil
+
+
+def tanggal(data, key, label):
+    """Tanggal dengan format tahun-bulan-hari, contoh "2026-11-19". Diubah menjadi date."""
+    nilai = data.get(key)
+    if not isinstance(nilai, str) or not POLA_TANGGAL.match(nilai):
+        raise ValidasiError(f"{label} wajib diisi dengan format tahun-bulan-hari.")
+    try:
+        return datetime.strptime(nilai, "%Y-%m-%d").date()
+    except ValueError:  # contoh 2026-02-31
+        raise ValidasiError(f"{label} bukan tanggal yang benar.") from None
 
 
 def id_dari_url(nilai):

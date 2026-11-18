@@ -5,6 +5,19 @@
 // Ponsel atau layar sempit (dicek sekali saat halaman dibuka).
 const LAYAR_KECIL = window.innerWidth < 768;
 
+// Bahasa Indonesia untuk kalender Webix dan nomor halaman di PDF unduhan.
+Object.assign(webix.i18n.calendar, {
+  monthFull: ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"],
+  monthShort: ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"],
+  dayFull: ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"],
+  dayShort: ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"],
+  today: "Hari ini",
+  clear: "Hapus",
+});
+webix.i18n.dataExport.page = "Halaman";
+webix.i18n.dataExport.of = "dari";
+webix.i18n.setLocale();
+
 /**
  * Kirim atau ambil data JSON dari server.
  * Contoh: const saya = await api("GET", "/api/saya");
@@ -114,6 +127,12 @@ function tanggalWaktu(iso) {
     hour: "2-digit",
     minute: "2-digit",
   });
+}
+
+// Tanggal saja (WIB): "2026-11-19T02:15:00+00:00" -> "19 Nov 2026"
+function tanggal(iso) {
+  if (!iso) return "–";
+  return new Date(iso).toLocaleDateString("id-ID", { timeZone: "Asia/Jakarta", day: "numeric", month: "short", year: "numeric" });
 }
 
 // Angka perubahan stok dengan tanda: 40 -> "+40", -5 -> "−5"
