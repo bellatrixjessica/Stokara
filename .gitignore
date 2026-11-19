@@ -13,3 +13,6 @@ __pycache__/
 
 # Pengaturan Claude Code lokal (bukan bagian aplikasi)
 .claude/
+
+# Token Vercel CLI (dibuat otomatis oleh vercel link)
+.env.local

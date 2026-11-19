@@ -460,7 +460,8 @@ flowchart LR
 
 | Langkah | Isi |
 |---|---|
-| Konfigurasi Vercel | `vercel.json` mengarahkan semua URL ke aplikasi Flask di `run.py` (dibuat di tahap deploy) |
+| Konfigurasi Vercel | `vercel.json` mengarahkan semua URL ke aplikasi Flask di `run.py`. `.vercelignore` mencegah `.env`, test, dan docs ikut di-upload |
+| Alamat | https://stokara-three.vercel.app |
 | Environment variable | `MONGO_URI`, `SECRET_KEY` diisi di dashboard Vercel. `FLASK_DEBUG` tidak diisi, jadi cookie `Secure` aktif |
 | Atlas Network Access | Mengizinkan `0.0.0.0/0`, karena alamat IP server Vercel berubah-ubah. Akses tetap dijaga username + password database |
 | Akun database | User khusus aplikasi dengan hak `readWrite` hanya di database `stokara` |

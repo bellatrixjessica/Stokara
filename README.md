@@ -6,7 +6,7 @@ Stokara mencatat stok, barang masuk dari supplier, permintaan dari toko, pengiri
 
 | | |
 |---|---|
-| **Demo** | _(diisi setelah deploy)_ |
+| **Demo** | https://stokara-three.vercel.app |
 | **Repository** | https://github.com/bellatrixjessica/Stokara |
 | **Dokumen** | [SRS](docs/SRS.md) · [System Design](docs/SYSTEM-DESIGN.md) · [Mockup](docs/mockup/index.html) · [Catatan per tahap](docs/belajar/) |
 
@@ -151,6 +151,27 @@ Data contoh sudah disiapkan untuk demo:
 - 1 permintaan menunggu dikirim (untuk Staff Gudang);
 - 1 produk kritis dan 1 produk perlu restock di dashboard;
 - fill rate sekitar 87%.
+
+## Deploy ke Vercel
+
+Konfigurasi ada di `vercel.json` (aplikasi Flask di `run.py`) dan `.vercelignore` (`.env`, test, dan docs tidak ikut di-upload).
+
+1. Di MongoDB Atlas → **Network Access**, tambahkan `0.0.0.0/0` (IP server Vercel berubah-ubah).
+2. Login dan buat project:
+
+   ```powershell
+   npx vercel login
+   npx vercel link --project stokara
+   ```
+
+3. Di dashboard Vercel → **Settings → Environment Variables**, tambahkan `MONGO_URI` dan `SECRET_KEY` (tipe Secret, environment Production). Jangan isi `FLASK_DEBUG`.
+4. Deploy:
+
+   ```powershell
+   npx vercel deploy --prod
+   ```
+
+5. Buka `/health`. Hasil yang benar: `{"database": "terhubung", "status": "ok"}`.
 
 ## Test
 
