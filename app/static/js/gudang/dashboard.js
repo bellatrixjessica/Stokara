@@ -1,11 +1,3 @@
-/* =====================================================================
- * Dashboard insight (Kepala Gudang)
- * Menjawab dua pertanyaan:
- *   1. Apakah permintaan toko terpenuhi?  -> fill rate, tren, fill rate per toko
- *   2. Kapan harus restock?               -> status stok dan saran restock per produk
- * API: GET /api/dashboard (rumus ada di app/models/insight.py)
- * ===================================================================== */
-
 const STATUS_INSIGHT = {
   KRITIS: '<span class="badge b-merah">Kritis</span>',
   PERLU_RESTOCK: '<span class="badge b-oranye">Perlu restock</span>',
@@ -14,7 +6,6 @@ const STATUS_INSIGHT = {
 };
 
 webix.ready(function () {
-  // Empat kartu angka di atas. Di ponsel: 2 x 2.
   const kartu = [kartuAngka("kartuFill"), kartuAngka("kartuKritis"), kartuAngka("kartuRestock"), kartuAngka("kartuMenunggu")];
   const barisKartu = LAYAR_KECIL
     ? { rows: [{ cols: [kartu[0], kartu[1]], margin: 10 }, { cols: [kartu[2], kartu[3]], margin: 10 }], margin: 10 }
@@ -127,14 +118,12 @@ function isiKartu(id, ikon, warna, angkaBesar, label, keterangan) {
   );
 }
 
-// Fill rate di bawah 85% ditandai merah
 function kolomPersen(t) {
   if (t.persen === null) return "–";
   const teks = desimal(t.persen) + "%";
   return t.persen < 85 ? '<b class="turun">' + teks + "</b>" : teks;
 }
 
-// Saran restock ditonjolkan hanya untuk Kritis / Perlu restock
 function kolomSaran(p) {
   const teks = angka(p.saran_restock) + " " + aman(p.satuan);
   return ["KRITIS", "PERLU_RESTOCK"].includes(p.status) ? "<b>" + teks + "</b>" : '<span class="kecil" style="display:inline">' + teks + "</span>";
@@ -163,7 +152,6 @@ async function muatData() {
   isiKartu("kartuMenunggu", "mdi-timer-sand", "ungu", angka(d.ringkasan.menunggu_persetujuan), "Menunggu persetujuan",
     angka(d.ringkasan.menunggu_kirim) + " menunggu kirim");
 
-  // Label tanggal di grafik cukup setiap 5 hari supaya tidak bertumpuk
   $$("grafik").clearAll();
   $$("grafik").parse(d.tren.map((t, i) => Object.assign({ tampilkan_label: i % 5 === 0 }, t)));
 

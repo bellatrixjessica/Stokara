@@ -1,7 +1,3 @@
-"""Model toko (collection master_toko).
-
-{ "kode": "TK-01", "nama": "Toko Salatiga 01", "alamat": "...", "aktif": True, "dibuat": datetime }
-"""
 from datetime import datetime, timezone
 
 from app.db import get_db

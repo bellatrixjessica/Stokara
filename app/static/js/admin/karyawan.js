@@ -1,10 +1,3 @@
-/* =====================================================================
- * Master Karyawan (Admin): akun login, role, toko, reset password.
- * API: GET/POST /api/master/karyawan, PUT /api/master/karyawan/<id>,
- *      POST /api/master/karyawan/<id>/status, POST /api/master/karyawan/<id>/password
- * DATA.role dikirim dari Flask: [{ id: "admin", value: "Admin" }, ...]
- * ===================================================================== */
-
 webix.ready(function () {
   const tabel = {
     view: "datatable",
@@ -35,7 +28,7 @@ webix.ready(function () {
 
   const toolbar = [
     { view: "search", id: "cari", placeholder: "Cari username atau nama...", maxWidth: 320, on: { onTimedKeyPress: saring } },
-    LAYAR_KECIL ? { width: 8 } : {}, // jarak antara kotak cari dan tombol
+    LAYAR_KECIL ? { width: 8 } : {},
     { view: "button", value: LAYAR_KECIL ? "Tambah" : "Tambah Karyawan", css: "webix_primary", width: LAYAR_KECIL ? 90 : 150, click: () => bukaForm(null) },
   ];
 
@@ -43,7 +36,6 @@ webix.ready(function () {
     rows: [judulHalaman("Karyawan", "Akun login, role, dan toko untuk Kepala Toko."), kartuTabel(toolbar, tabel)],
   });
 
-  // Form tambah/ubah karyawan
   buatJendela("jendela", "Tambah Karyawan", [
     { view: "text", name: "username", label: "Username", placeholder: "Contoh: toko.kendal01", required: true },
     { view: "text", name: "nama", label: "Nama lengkap", required: true },
@@ -58,7 +50,6 @@ webix.ready(function () {
     },
   ], simpan);
 
-  // Form reset password
   buatJendela("jendelaPassword", "Reset Password", [
     { view: "template", id: "infoPassword", borderless: true, autoheight: true, css: "info-form", template: "" },
     {
@@ -91,7 +82,6 @@ async function muatData() {
   saring();
 }
 
-// Pilihan toko: hanya toko aktif
 async function muatToko() {
   const data = await api("GET", "/api/master/toko");
   if (!data) return;
@@ -105,7 +95,6 @@ function saring() {
   $$("tabel").filter((u) => (u.username + " " + u.nama).toLowerCase().includes(kata));
 }
 
-// Pilihan Toko hanya muncul kalau role = Kepala Toko
 function aturPilihanToko(role) {
   if (role === "kepala_toko") {
     $$("pilihToko").show();
@@ -122,8 +111,8 @@ function bukaForm(user) {
   if (user) {
     $$("jendela_judul").setValue("Ubah Karyawan");
     form.setValues(user);
-    form.elements.username.disable(); // username tidak bisa diubah
-    $$("isiPassword").hide();         // password diganti lewat "Reset password"
+    form.elements.username.disable();
+    $$("isiPassword").hide();
   } else {
     $$("jendela_judul").setValue("Tambah Karyawan");
     form.elements.username.enable();

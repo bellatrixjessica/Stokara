@@ -1,11 +1,3 @@
-/* =====================================================================
- * Barang Masuk dari supplier
- * - Kepala Gudang & Staff Gudang: lihat daftar dan detail
- * - Staff Gudang: catat barang masuk (stok otomatis bertambah)
- * API: GET/POST /api/barang-masuk, GET /api/barang-masuk/pilihan
- * DATA.boleh_catat = true kalau yang login Staff Gudang
- * ===================================================================== */
-
 webix.ready(function () {
   const tabel = {
     view: "datatable",
@@ -72,9 +64,8 @@ function saring() {
   $$("tabel").filter((b) => (b.nomor + " " + b.supplier + " " + b.no_surat_jalan).toLowerCase().includes(kata));
 }
 
-// ---------- Form catat barang masuk (Staff Gudang) ----------
 
-let pilihanProduk = []; // [{ id, value: "P-0001 · Minyak Goreng 1L", satuan }]
+let pilihanProduk = [];
 
 function buatForm() {
   buatJendela("jendela", "Catat Barang Masuk", [
@@ -137,7 +128,6 @@ function bukaForm() {
   $$("jendela").show();
 }
 
-// Tambah produk ke daftar. Kalau produknya sudah ada, qty-nya dijumlahkan.
 function tambahItem() {
   const produkId = $$("pilihProduk").getValue();
   const qty = Number($$("isiQty").getValue());
@@ -182,7 +172,6 @@ async function simpan() {
   muatData();
 }
 
-// ---------- Jendela detail ----------
 
 function buatJendelaDetail() {
   webix.ui({

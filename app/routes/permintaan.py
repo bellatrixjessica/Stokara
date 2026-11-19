@@ -1,9 +1,3 @@
-"""Permintaan barang dari toko.
-
-- Kepala Toko   : ajukan, batalkan, konfirmasi diterima (hanya permintaan tokonya)
-- Kepala Gudang : setujui, ubah qty disetujui, tolak
-- Staff Gudang  : kirim
-"""
 from flask import Blueprint, abort, g, jsonify, request
 
 from app.models import permintaan as model
@@ -18,8 +12,6 @@ bp = Blueprint("permintaan", __name__)
 SEMUA_ROLE_PERMINTAAN = (KEPALA_GUDANG, STAFF_GUDANG, KEPALA_TOKO)
 
 
-# ---------------------------------------------------------------- halaman
-
 @bp.get("/permintaan")
 @wajib_login(KEPALA_GUDANG, STAFF_GUDANG)
 def halaman_gudang():
@@ -32,25 +24,19 @@ def halaman_toko():
     return render_halaman(["permintaan_bersama.js", "toko/permintaan.js"], "Permintaan Barang", "permintaan-saya")
 
 
-# ---------------------------------------------------------------- bantuan
-
 def ambil_permintaan(permintaan_id):
-    """Cari permintaan. Kepala Toko hanya boleh membuka permintaan tokonya sendiri."""
     permintaan = model.cari(id_dari_url(permintaan_id))
     if permintaan is None:
         abort(404)
     if g.user["role"] == KEPALA_TOKO and permintaan["toko_id"] != g.user["toko_id"]:
-        abort(404)  # 404, bukan 403, supaya toko lain tidak tahu permintaan itu ada
+        abort(404)
     return permintaan
 
 
 def baca_qty_disetujui():
-    """Isi: {"items": [{"produk_id": "...", "qty": 30}, ...]} -> {ObjectId: 30, ...}"""
     items = daftar_item(ambil_json(["items"]), qty_minimal=0)
     return {item["produk_id"]: item["qty"] for item in items}
 
-
-# ---------------------------------------------------------------- membaca
 
 @bp.get("/api/permintaan")
 @wajib_login(*SEMUA_ROLE_PERMINTAAN)
@@ -68,7 +54,7 @@ def daftar():
 def detail(permintaan_id):
     permintaan = ambil_permintaan(permintaan_id)
     if g.user["role"] != KEPALA_TOKO:
-        model.info_stok(permintaan)  # angka stok gudang hanya untuk layar gudang
+        model.info_stok(permintaan)
     return jsonify(ke_json(permintaan))
 
 
@@ -77,8 +63,6 @@ def detail(permintaan_id):
 def pilihan_produk():
     return jsonify(model.pilihan_produk())
 
-
-# ---------------------------------------------------------------- aksi Kepala Toko
 
 @bp.post("/api/permintaan")
 @wajib_login(KEPALA_TOKO)
@@ -107,8 +91,6 @@ def terima(permintaan_id):
     return jsonify(pesan="Terima kasih. Barang sudah dikonfirmasi diterima.")
 
 
-# ---------------------------------------------------------------- aksi Kepala Gudang
-
 @bp.post("/api/permintaan/<permintaan_id>/setujui")
 @wajib_login(KEPALA_GUDANG)
 def setujui(permintaan_id):
@@ -133,8 +115,6 @@ def tolak(permintaan_id):
     model.tolak(permintaan, alasan, g.user)
     return jsonify(pesan=f"Permintaan {permintaan['nomor']} ditolak.")
 
-
-# ---------------------------------------------------------------- aksi Staff Gudang
 
 @bp.post("/api/permintaan/<permintaan_id>/kirim")
 @wajib_login(STAFF_GUDANG)

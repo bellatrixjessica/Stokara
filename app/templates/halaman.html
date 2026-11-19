@@ -1,10 +1,3 @@
-{#
-  Dipakai semua halaman setelah login.
-  - DATA      : data dari Flask (pengguna, menu, branch). Filter tojson membuatnya
-                aman ditaruh di <script> (karakter < > & di-escape).
-  - layout.js : membuat header + sidebar + lonceng notifikasi.
-  - js        : daftar file isi halaman, contoh ["beranda.js"].
-#}
 {% extends "base.html" %}
 {% block judul %}{{ judul }}{% endblock %}
 {% block script %}

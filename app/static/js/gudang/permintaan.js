@@ -1,15 +1,7 @@
-/* =====================================================================
- * Permintaan Toko (halaman gudang)
- * - Kepala Gudang : setujui (qty disetujui bisa diubah), ubah qty, tolak
- * - Staff Gudang  : kirim
- * Fungsi bersama (label status, jendela detail) ada di permintaan_bersama.js
- * ===================================================================== */
-
 const KEPALA_GUDANG = DATA.pengguna.role === "kepala_gudang";
-let permintaanAktif = null; // permintaan yang sedang dibuka di jendela detail
+let permintaanAktif = null;
 
 webix.ready(function () {
-  // Kepala Gudang langsung melihat yang perlu disetujui, Staff Gudang yang perlu dikirim
   const statusAwal = KEPALA_GUDANG ? "DIAJUKAN" : "DISETUJUI";
 
   const tabel = {
@@ -78,7 +70,6 @@ webix.ready(function () {
   );
 
   muatData().then(() => {
-    // Datang dari klik notifikasi: langsung buka permintaannya
     const nomor = nomorDariAlamat();
     if (nomor) bukaBerdasarkanNomor(nomor);
   });
@@ -99,26 +90,22 @@ function saring() {
 }
 
 async function bukaBerdasarkanNomor(nomor) {
-  // Permintaannya mungkin tidak ada di filter status saat ini, jadi cari di semua status
   const semua = await api("GET", "/api/permintaan");
   const p = semua && semua.find((x) => x.nomor === nomor);
   if (p) bukaDetail(p.id);
 }
 
-// ---------- Jendela detail ----------
 
 async function bukaDetail(id) {
   const p = await api("GET", "/api/permintaan/" + id);
   if (!p) return;
   permintaanAktif = p;
 
-  // Kepala Gudang boleh mengisi qty disetujui saat status Diajukan atau Disetujui
   const bolehUbahQty = KEPALA_GUDANG && ["DIAJUKAN", "DISETUJUI"].includes(p.status);
 
   const baris = p.items.map(function (item) {
     const isi = Object.assign({ id: item.produk_id }, item);
     if (p.status === "DIAJUKAN") {
-      // Terisi otomatis: sebanyak yang bisa dipenuhi (terkecil antara diminta dan tersedia)
       isi.qty_disetujui = Math.min(item.qty_diminta, item.tersedia);
     }
     return isi;
@@ -131,10 +118,8 @@ async function bukaDetail(id) {
   } else {
     webix.html.removeCss(tabel.$view, "sedang-edit");
   }
-  // Kolom stok hanya berguna selama permintaan belum dikirim
   const masihProses = ["DIAJUKAN", "DISETUJUI"].includes(p.status);
   if (masihProses) tabel.showColumn("tersedia"); else tabel.hideColumn("tersedia");
-  // Di ponsel kolom Dikirim (masih kosong) disembunyikan selama proses, supaya tabel muat
   if (LAYAR_KECIL && masihProses) tabel.hideColumn("qty_dikirim"); else tabel.showColumn("qty_dikirim");
 
   aturTombol("tombolTolak", KEPALA_GUDANG && masihProses);
@@ -149,13 +134,9 @@ function aturTombol(id, tampil) {
   if (tampil) $$(id).show(); else $$(id).hide();
 }
 
-/**
- * Ambil qty disetujui dari tabel, contoh [{ produk_id: "...", qty: 30 }, ...].
- * Mengembalikan null (dan menampilkan pesan) kalau ada isian yang bukan angka bulat >= 0.
- */
 function bacaQtyDisetujui() {
   const tabel = $$("tabelPermintaan");
-  tabel.editStop(); // simpan angka yang sedang diketik
+  tabel.editStop();
   const hasil = [];
   for (const baris of tabel.serialize()) {
     const qty = Number(baris.qty_disetujui);
@@ -204,7 +185,7 @@ async function kirim() {
 }
 
 function selesaiAksi(hasil) {
-  if (!hasil) return; // gagal: pesan error sudah tampil, jendela tetap terbuka
+  if (!hasil) return;
   berhasil(hasil.pesan);
   $$("jendelaPermintaan").hide();
   muatData();

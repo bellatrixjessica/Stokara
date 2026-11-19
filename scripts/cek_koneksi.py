@@ -1,14 +1,9 @@
-"""Cek koneksi ke MongoDB Atlas dan izin tulis ke database Stokara.
-
-Jalankan dari folder D:\\Stokara:
-    python scripts/cek_koneksi.py
-"""
 import os
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from app import create_app  # noqa: E402
+from app import create_app
 
 app = create_app()
 db = app.db
@@ -23,7 +18,6 @@ except Exception as e:
 print("2. Nama database         :", db.name)
 
 try:
-    # Tulis satu dokumen percobaan, lalu hapus lagi.
     hasil = db.cek_koneksi.insert_one({"pesan": "tes tulis"})
     db.cek_koneksi.delete_one({"_id": hasil.inserted_id})
     db.drop_collection("cek_koneksi")

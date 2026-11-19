@@ -1,8 +1,3 @@
-"""Angka "perlu ditindaklanjuti" di kartu beranda, berbeda untuk setiap role.
-
-Hasil: {id_menu: [{"teks": "2 menunggu", "warna": "b-biru"}, ...]}
-id_menu sama dengan id di MENU (app/utils/tampilan.py), contoh "permintaan".
-"""
 from app.db import get_db
 from app.models import insight
 from app.models.user import KEPALA_GUDANG, KEPALA_TOKO, STAFF_GUDANG

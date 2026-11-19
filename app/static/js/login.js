@@ -1,9 +1,3 @@
-/* =====================================================================
- * Halaman login.
- * Laptop : panel ungu di kiri, form di kanan.
- * Ponsel : panel ungu pendek di atas, form di bawah.
- * ===================================================================== */
-
 webix.ready(function () {
   const logo = '<img src="/static/img/logo-stokara.svg" width="38" height="38" alt="">';
   const judulBesar = "Stok gudang terkendali,<br>permintaan toko terpenuhi.";
@@ -51,7 +45,6 @@ webix.ready(function () {
         height: 74,
         template: "<h1>Selamat datang</h1><p>Silakan masuk ke akun Anda.</p>",
       },
-      // Enter di username: pindah ke password (kalau password masih kosong), Enter di password: masuk.
       {
         view: "text", name: "username", label: "Username", labelPosition: "top",
         placeholder: "Masukkan username", required: true, invalidMessage: "Username wajib diisi",
@@ -68,10 +61,9 @@ webix.ready(function () {
   };
 
   if (!LAYAR_KECIL) {
-    form.width = 360; // di laptop lebar form tetap, di ponsel selebar layar
+    form.width = 360;
   }
 
-  // Form diletakkan di tengah area putih
   const sisiForm = {
     css: "login-kanan",
     padding: LAYAR_KECIL ? 10 : 0,
@@ -89,14 +81,14 @@ function enterDiUsername() {
   if ($$("isiPassword").getValue() === "") {
     $$("isiPassword").focus();
   } else {
-    masuk(); // password sudah terisi (misalnya diisi otomatis oleh browser)
+    masuk();
   }
 }
 
 async function masuk() {
   const tombol = $$("tombolMasuk");
   if (!tombol.isEnabled()) {
-    return; // sedang memproses login, cegah Enter berkali-kali
+    return;
   }
   const form = $$("formLogin");
   if (!form.validate()) {
@@ -106,7 +98,7 @@ async function masuk() {
   tombol.disable();
   const hasil = await api("POST", "/api/login", form.getValues());
   if (!hasil) {
-    tombol.enable(); // pesan error sudah ditampilkan oleh api()
+    tombol.enable();
     return;
   }
   window.location.href = hasil.redirect;

@@ -1,4 +1,3 @@
-"""Pembuatan aplikasi Flask Stokara."""
 from flask import Flask, jsonify
 
 from config import Config
@@ -18,7 +17,6 @@ def create_app(config_class=Config):
 
     init_db(app)
 
-    # Daftarkan kumpulan route (blueprint). Setiap fitur punya file sendiri.
     from app.routes.umum import bp as umum_bp
     from app.routes.auth import bp as auth_bp
     from app.routes.toko import bp as toko_bp
@@ -46,12 +44,10 @@ def create_app(config_class=Config):
     app.register_blueprint(dashboard_bp)
     app.register_blueprint(laporan_bp)
 
-    # Semua ValidasiError di route mana pun diubah menjadi respon 400.
     @app.errorhandler(ValidasiError)
     def validasi_gagal(error):
         return jsonify(pesan=error.pesan), 400
 
-    # Halaman error yang rapi (API tetap mendapat JSON).
     @app.errorhandler(403)
     def dilarang(error):
         return halaman_error(403, "Akses ditolak", "Anda tidak punya akses ke fitur ini.")

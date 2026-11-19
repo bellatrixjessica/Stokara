@@ -1,41 +1,24 @@
-/* =====================================================================
- * Laporan (Kepala Gudang: 4 jenis laporan, Kepala Toko: permintaan tokonya)
- * - Pilih jenis laporan dan periode, klik Tampilkan
- * - Ringkasan 4 angka + tabel
- * - Unduh Excel / PDF memakai fitur ekspor bawaan Webix (webix.toExcel, webix.toPDF)
- * API: GET /api/laporan/<jenis>?dari=YYYY-MM-DD&sampai=YYYY-MM-DD&toko=<id>
- * ===================================================================== */
-
 const KEPALA_GUDANG = DATA.pengguna.role === "kepala_gudang";
-const UBAH_TANGGAL = webix.Date.dateToStr("%Y-%m-%d"); // Date -> "2026-11-19" untuk API
-let laporan = null; // data laporan yang sedang tampil (untuk judul file unduhan)
+const UBAH_TANGGAL = webix.Date.dateToStr("%Y-%m-%d");
+let laporan = null;
 
 const LABEL_JENIS_MUTASI = { MASUK: "Masuk", KELUAR: "Keluar", ADJUST: "Penyesuaian" };
 const CSS_JENIS_MUTASI = { MASUK: "b-hijau", KELUAR: "b-oranye", ADJUST: "b-ungu" };
 const LABEL_INSIGHT = { KRITIS: "Kritis", PERLU_RESTOCK: "Perlu restock", AMAN: "Aman", TANPA_PERMINTAAN: "Tidak ada permintaan" };
 const CSS_INSIGHT = { KRITIS: "b-merah", PERLU_RESTOCK: "b-oranye", AMAN: "b-hijau", TANPA_PERMINTAAN: "b-abu" };
 
-// Kolom angka rata kanan
 function kolomAngka(id, judul, lebar, isi) {
   return { id: id, header: { text: judul, css: "kanan" }, css: "kanan", width: lebar, template: isi };
 }
 
-// Fill rate per permintaan. Yang belum selesai atau dibatalkan tidak punya fill rate.
 function teksFillRate(b) {
   if (b.fill_rate !== null) return desimal(b.fill_rate) + "%";
   return b.status === "DIBATALKAN" ? "tidak dihitung" : "belum selesai";
 }
 
-/* ---------------------------------------------------------------------
- * Setiap jenis laporan punya dua daftar kolom:
- * - tabel  : tampilan di layar (boleh berisi HTML: badge, dua baris)
- * - ekspor : isi file Excel/PDF (teks biasa, kode dan nama dipisah)
- * ------------------------------------------------------------------- */
 const KOLOM = {
   permintaan: {
     tabel: [
-      // Kepala Toko tidak melihat kolom toko, jadi kolom nomor yang melebar mengisi tabel
-      // Di ponsel nama toko ditaruh di bawah nomor supaya tabel tidak terlalu lebar.
       {
         id: "nomor", header: "Nomor", minWidth: LAYAR_KECIL ? 100 : 150, fillspace: !KEPALA_GUDANG || LAYAR_KECIL, css: "dua-baris",
         template: (b) => aman(b.nomor) + (LAYAR_KECIL && KEPALA_GUDANG ? '<span class="kecil">' + aman(b.toko) + "</span>" : ""),
@@ -111,7 +94,6 @@ const KOLOM = {
       Object.assign(kolomAngka("demand_per_hari", "Demand/hari", 110, (b) => desimal(b.demand_per_hari)), { hidden: LAYAR_KECIL }),
       Object.assign(kolomAngka("safety_stock", "Safety stock", 120, (b) => angka(b.safety_stock)), { hidden: LAYAR_KECIL }),
       Object.assign(kolomAngka("reorder_point", "ROP", 70, (b) => angka(b.reorder_point)), { hidden: LAYAR_KECIL }),
-      // Sama seperti dashboard: saran ditebalkan hanya untuk produk Kritis / Perlu restock
       kolomAngka("saran_restock", LAYAR_KECIL ? "Saran" : "Saran restock", LAYAR_KECIL ? 90 : 130, (b) => ["KRITIS", "PERLU_RESTOCK"].includes(b.status)
         ? "<b>" + angka(b.saran_restock) + " " + aman(b.satuan) + "</b>"
         : '<span class="kecil" style="display:inline">' + angka(b.saran_restock) + " " + aman(b.satuan) + "</span>"),
@@ -133,11 +115,9 @@ const KOLOM = {
 };
 
 webix.ready(function () {
-  // Periode bawaan: 30 hari terakhir (hari ini ikut dihitung)
   const hariIni = new Date();
   const awal = webix.Date.add(hariIni, -29, "day", true);
 
-  // Layar lebar: tombol pilihan (segmented). Ponsel: dropdown, karena 4 tombol tidak muat.
   const pilihJenis = {
     view: LAYAR_KECIL ? "richselect" : "segmented", id: "jenis", value: "permintaan",
     label: LAYAR_KECIL ? "Jenis laporan" : "", labelPosition: LAYAR_KECIL ? "top" : "left", labelWidth: LAYAR_KECIL ? 80 : 0,
@@ -163,7 +143,6 @@ webix.ready(function () {
     { view: "button", id: "unduhPdf", type: "icon", icon: "mdi mdi-file-pdf-box", label: LAYAR_KECIL ? "PDF" : "Unduh PDF", css: "tombol-garis", width: LAYAR_KECIL ? 0 : 120, click: unduhPdf, disabled: true },
   ];
 
-  // Di layar lebar semua filter satu baris; di ponsel ditumpuk.
   const barisFilter = LAYAR_KECIL
     ? { rows: [{ cols: [tanggalDari, tanggalSampai], margin: 10 }, pilihToko, { cols: [tombolTampilkan].concat(tombolUnduh), margin: 8 }], margin: 10 }
     : { cols: [tanggalDari, tanggalSampai, pilihToko, { rows: [{}, tombolTampilkan] }, {}, { rows: [{}, { cols: tombolUnduh, margin: 8 }] }], margin: 12 };
@@ -172,7 +151,6 @@ webix.ready(function () {
     css: "kartu-panel",
     padding: 14,
     rows: [
-      // Kepala Toko hanya punya laporan permintaan, jadi pilihan jenis disembunyikan (tetap ada nilainya).
       { hidden: !KEPALA_GUDANG, cols: LAYAR_KECIL ? [pilihJenis] : [Object.assign(pilihJenis, { width: 560 }), {}] },
       { height: KEPALA_GUDANG ? 12 : 0 },
       { view: "form", id: "formFilter", borderless: true, padding: 0, elements: [barisFilter] },
@@ -206,7 +184,7 @@ webix.ready(function () {
             : "Rekap permintaan toko Anda untuk periode tertentu, bisa diunduh sebagai Excel atau PDF."),
         kartuFilter,
         { height: 14 },
-        { css: "kartu-tabel", height: 15 * 50 + 50 + 46, rows: [tabel, pager] }, // 15 baris + judul kolom + pager
+        { css: "kartu-tabel", height: 15 * 50 + 50 + 46, rows: [tabel, pager] },
       ],
     },
   });
@@ -221,10 +199,9 @@ function infoHalaman(data) {
   return "Menampilkan " + dari + "–" + sampai + " dari " + angka(data.count) + " baris";
 }
 
-// Ganti jenis laporan: kolom tabel diganti, filter yang tidak dipakai disembunyikan.
 function gantiJenis() {
   const jenis = $$("jenis").getValue();
-  const pakaiTanggal = jenis !== "restock"; // saran restock = keadaan saat ini
+  const pakaiTanggal = jenis !== "restock";
   ["dari", "sampai"].forEach((id) => (pakaiTanggal ? $$(id).enable() : $$(id).disable()));
   if (KEPALA_GUDANG) {
     jenis === "permintaan" ? $$("toko").show() : $$("toko").hide();
@@ -252,13 +229,13 @@ async function muatLaporan() {
   }
 
   const data = await api("GET", "/api/laporan/" + jenis + "?" + parameter.toString());
-  if (!data || jenis !== $$("jenis").getValue()) return; // jenis sudah diganti saat menunggu
+  if (!data || jenis !== $$("jenis").getValue()) return;
   laporan = data;
 
   isiRingkasan(data);
   $$("tabel").clearAll();
   $$("tabel").parse(data.baris);
-  $$("tabel").setPage(0); // kembali ke halaman pertama
+  $$("tabel").setPage(0);
   const adaData = data.baris.length > 0;
   [$$("unduhExcel"), $$("unduhPdf")].forEach((b) => (adaData ? b.enable() : b.disable()));
 }
@@ -279,12 +256,8 @@ function isiRingkasan(data) {
   );
 }
 
-/* ---------------------------------------------------------------------
- * Unduhan. Webix memuat pustaka Excel/PDF-nya sendiri saat pertama dipakai.
- * ------------------------------------------------------------------- */
 
 function namaFile() {
-  // "Laporan Permintaan Toko 2026-10-21 sd 2026-11-19"
   const jenis = $$("jenis").getValue();
   if (jenis === "restock") return laporan.judul + " " + UBAH_TANGGAL(new Date());
   return laporan.judul + " " + UBAH_TANGGAL($$("dari").getValue()) + " sd " + UBAH_TANGGAL($$("sampai").getValue());
@@ -292,11 +265,9 @@ function namaFile() {
 
 function kolomEkspor() {
   const jenis = $$("jenis").getValue();
-  // Kepala Toko: kolom toko tidak perlu, isinya tokonya sendiri
   return KOLOM[jenis].ekspor.filter((k) => KEPALA_GUDANG || k.id !== "toko");
 }
 
-// Ringkasan dalam satu baris teks, contoh "Permintaan: 57 · Qty diminta: 1.558 · ..."
 function teksRingkasan() {
   return laporan.ringkasan.map((r) => r.label + ": " + nilaiRingkasan(r)).join("  ·  ");
 }
@@ -305,7 +276,6 @@ function teksDicetak() {
   return "Dicetak oleh " + DATA.pengguna.nama + ", " + tanggalWaktu(new Date().toISOString()) + " WIB";
 }
 
-// unduh = false dipakai saat pengujian: file tidak disimpan, hanya dikembalikan sebagai data.
 function unduhExcel(unduh) {
   return webix.toExcel($$("tabel"), {
     download: unduh !== false,
@@ -326,7 +296,7 @@ async function unduhPdf(unduh) {
       orientation: "landscape",
       autowidth: false,
       columns: kolomEkspor(),
-      docHeaderImage: { url: await logoJpeg(), width: 36, height: 36, align: "left", order: 0 }, // logo di paling atas
+      docHeaderImage: { url: await logoJpeg(), width: 36, height: 36, align: "left", order: 0 },
       docHeader: {
         text: "Stokara " + DATA.branch + "\n" + laporan.judul + "\n" + laporan.periode + "\n\n" + teksRingkasan() + "\n" + teksDicetak(),
         textAlign: "left", color: 0x26215c, order: 1,
@@ -337,7 +307,6 @@ async function unduhPdf(unduh) {
   }
 }
 
-// Pustaka PDF Webix hanya menerima gambar JPEG, jadi logo SVG digambar ulang sebagai JPEG di browser.
 function logoJpeg() {
   return new Promise((selesai, gagal) => {
     const gambar = new Image();
@@ -345,7 +314,7 @@ function logoJpeg() {
       const kanvas = document.createElement("canvas");
       kanvas.width = kanvas.height = 128;
       const kuas = kanvas.getContext("2d");
-      kuas.fillStyle = "#fff"; // JPEG tidak punya latar transparan
+      kuas.fillStyle = "#fff";
       kuas.fillRect(0, 0, 128, 128);
       kuas.drawImage(gambar, 0, 0, 128, 128);
       kanvas.toBlob((blob) => selesai(URL.createObjectURL(blob)), "image/jpeg", 0.92);

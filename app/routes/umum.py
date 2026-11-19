@@ -1,4 +1,3 @@
-"""Halaman umum: awal, login, beranda, dan cek kesehatan."""
 from flask import Blueprint, jsonify, redirect, render_template, session
 
 from app.db import get_db
@@ -30,7 +29,6 @@ def beranda():
 
 @bp.get("/health")
 def health():
-    """Cek apakah aplikasi bisa menghubungi database. Dipakai setelah deploy."""
     try:
         get_db().command("ping")
         return jsonify(status="ok", database="terhubung")

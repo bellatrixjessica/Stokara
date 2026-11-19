@@ -1,4 +1,3 @@
-"""Stok gudang dan riwayat mutasi (Kepala Gudang dan Staff Gudang)."""
 from flask import Blueprint, abort, jsonify, request
 
 from app.db import get_db
@@ -21,7 +20,6 @@ def halaman():
 @bp.get("/api/stok")
 @wajib_login(KEPALA_GUDANG, STAFF_GUDANG)
 def daftar():
-    # /api/stok?cari=minyak  -> hanya produk yang cocok (lihat filter_cari di model)
     cari = teks(request.args, "cari", "Kata kunci", wajib=False, maks=50)
     return jsonify(model_stok.daftar_stok(cari or None))
 

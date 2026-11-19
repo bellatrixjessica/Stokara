@@ -1,4 +1,3 @@
-"""Test halaman: login, beranda, menu per role, dan halaman error."""
 from flask import abort
 
 from app.models.user import ADMIN, KEPALA_GUDANG, KEPALA_TOKO, STAFF_GUDANG
@@ -9,8 +8,6 @@ from tests.helper import login
 def id_menu(role):
     return [m["id"] for m in menu_untuk(role)]
 
-
-# ---------- Menu per role ----------
 
 def test_menu_admin_hanya_master_data():
     assert id_menu(ADMIN) == ["beranda", "produk", "toko", "supplier", "karyawan"]
@@ -31,8 +28,6 @@ def test_menu_staff_gudang_tanpa_dashboard_dan_laporan():
 def test_menu_kepala_toko():
     assert id_menu(KEPALA_TOKO) == ["beranda", "permintaan-saya", "laporan"]
 
-
-# ---------- Halaman ----------
 
 def test_halaman_awal_belum_login_ke_login(client):
     respon = client.get("/")
@@ -63,11 +58,9 @@ def test_beranda_berisi_data_pengguna_dan_menu_sesuai_role(client):
     halaman = client.get("/beranda").get_data(as_text=True)
     assert "Kepala Toko Salatiga 01" in halaman
     assert "Permintaan Barang" in halaman
-    assert "Dashboard" not in halaman      # menu Kepala Gudang tidak ikut
-    assert "password_hash" not in halaman  # data rahasia tidak terkirim
+    assert "Dashboard" not in halaman
+    assert "password_hash" not in halaman
 
-
-# ---------- Halaman error ----------
 
 def test_halaman_tidak_ada_tampil_404(client):
     respon = client.get("/halaman-tidak-ada")

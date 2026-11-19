@@ -1,4 +1,3 @@
-"""Master Toko (khusus Admin)."""
 from flask import Blueprint, abort, jsonify
 
 from app.models import toko as model_toko
@@ -42,7 +41,7 @@ def ubah(toko_id):
     if model_toko.cari(toko_id) is None:
         abort(404)
 
-    data = ambil_json(["nama", "alamat"])  # kode tidak bisa diubah
+    data = ambil_json(["nama", "alamat"])
     model_toko.ubah(
         toko_id,
         nama=teks(data, "nama", "Nama toko"),

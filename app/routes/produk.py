@@ -1,4 +1,3 @@
-"""Master Produk (khusus Admin)."""
 from flask import Blueprint, abort, jsonify
 
 from app.models import produk as model_produk
@@ -28,7 +27,6 @@ def daftar():
 
 
 def baca_form(data):
-    """Validasi isian form produk (dipakai saat tambah dan ubah)."""
     return {
         "nama": teks(data, "nama", "Nama produk"),
         "kategori": teks(data, "kategori", "Kategori", maks=50),
@@ -53,7 +51,7 @@ def ubah(produk_id):
     if model_produk.cari(produk_id) is None:
         abort(404)
 
-    data = ambil_json(KOLOM_FORM)  # kode dan stok tidak bisa diubah dari sini
+    data = ambil_json(KOLOM_FORM)
     model_produk.ubah(produk_id, **baca_form(data))
     return jsonify(pesan="Data produk berhasil diubah.")
 

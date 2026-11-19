@@ -1,4 +1,3 @@
-"""Test aturan bisnis permintaan toko (inti Stokara)."""
 import pytest
 from bson import ObjectId
 
@@ -10,7 +9,6 @@ from tests.helper import login
 
 @pytest.fixture
 def stok_awal(app, produk):
-    """Minyak: stok fisik 100. Beras: stok fisik 10."""
     with app.app_context():
         get_db().master_produk.update_one({"_id": produk["minyak"]}, {"$set": {"stok": 100}})
         get_db().master_produk.update_one({"_id": produk["beras"]}, {"$set": {"stok": 10}})
@@ -65,8 +63,6 @@ def stok_tersedia(client, kode):
     return [p for p in client.get("/api/stok").get_json() if p["kode"] == kode][0]["tersedia"]
 
 
-# ---------------------------------------------------------------- mengajukan
-
 def test_ajukan_berstatus_diajukan_dan_kepala_gudang_dapat_notifikasi(client, app, stok_awal):
     pid = ajukan(client, stok_awal)
     assert status(app, pid) == "DIAJUKAN"
@@ -82,15 +78,13 @@ def test_diajukan_belum_mengurangi_stok_tersedia(client, stok_awal):
     assert stok_tersedia(client, "P-0001") == 100
 
 
-# ---------------------------------------------------------------- menyetujui
-
 def test_setujui_mengurangi_stok_tersedia_bukan_stok_fisik(client, app, stok_awal):
     pid = ajukan(client, stok_awal, minyak=30, beras=5)
     assert setujui(client, pid, qty(stok_awal, 30, 5)).status_code == 200
 
     assert status(app, pid) == "DISETUJUI"
-    assert stok_tersedia(client, "P-0001") == 70      # 100 - 30 dipesan
-    assert stok_fisik(app, stok_awal["minyak"]) == 100  # fisik belum berubah
+    assert stok_tersedia(client, "P-0001") == 70
+    assert stok_fisik(app, stok_awal["minyak"]) == 100
 
 
 def test_qty_disetujui_tidak_boleh_melebihi_diminta(client, stok_awal):
@@ -101,12 +95,12 @@ def test_qty_disetujui_tidak_boleh_melebihi_diminta(client, stok_awal):
 
 
 def test_qty_disetujui_tidak_boleh_melebihi_stok_tersedia(client, stok_awal):
-    pid = ajukan(client, stok_awal, minyak=30, beras=20)   # beras stok hanya 10
+    pid = ajukan(client, stok_awal, minyak=30, beras=20)
     respon = setujui(client, pid, qty(stok_awal, 30, 15))
     assert respon.status_code == 400
     assert "stok tersedia hanya 10" in respon.get_json()["pesan"]
 
-    assert setujui(client, pid, qty(stok_awal, 30, 10)).status_code == 200  # disesuaikan
+    assert setujui(client, pid, qty(stok_awal, 30, 10)).status_code == 200
 
 
 def test_stok_yang_sudah_dipesan_tidak_bisa_disetujui_lagi(client, stok_awal):
@@ -128,7 +122,7 @@ def test_semua_qty_nol_harus_pakai_tolak(client, stok_awal):
 
 def test_qty_harus_diisi_untuk_semua_produk(client, stok_awal):
     pid = ajukan(client, stok_awal, minyak=30, beras=5)
-    assert setujui(client, pid, qty(stok_awal, 30)).status_code == 400   # beras tidak diisi
+    assert setujui(client, pid, qty(stok_awal, 30)).status_code == 400
 
 
 def test_toko_diberi_tahu_jika_qty_disesuaikan(client, stok_awal):
@@ -142,8 +136,6 @@ def test_toko_diberi_tahu_jika_qty_disesuaikan(client, stok_awal):
     client.post("/api/notifikasi/baca")
     assert client.get("/api/notifikasi").get_json()["belum_dibaca"] == 0
 
-
-# ---------------------------------------------------------------- menolak & membatalkan
 
 def test_tolak_wajib_dengan_alasan(client, app, stok_awal):
     pid = ajukan(client, stok_awal)
@@ -179,8 +171,6 @@ def test_toko_bisa_membatalkan_yang_masih_diajukan(client, app, stok_awal):
     assert status(app, pid) == "DIBATALKAN"
 
 
-# ---------------------------------------------------------------- mengirim
-
 def test_kirim_qty_dikirim_sama_dengan_disetujui_dan_stok_berkurang(client, app, stok_awal):
     pid = ajukan(client, stok_awal, minyak=30, beras=5)
     setujui(client, pid, qty(stok_awal, 25, 5))
@@ -198,14 +188,14 @@ def test_kirim_qty_dikirim_sama_dengan_disetujui_dan_stok_berkurang(client, app,
 def test_tidak_ada_pengiriman_sebagian(client, app, stok_awal):
     pid = ajukan(client, stok_awal, minyak=30, beras=5)
     setujui(client, pid, qty(stok_awal, 30, 5))
-    with app.app_context():  # ada beras rusak, stok fisik tinggal 3
+    with app.app_context():
         get_db().master_produk.update_one({"_id": stok_awal["beras"]}, {"$set": {"stok": 3}})
 
     respon = kirim(client, pid)
     assert respon.status_code == 400
     assert "Beras Premium 5kg (perlu 5, stok fisik 3)" in respon.get_json()["pesan"]
-    assert status(app, pid) == "DISETUJUI"                      # status tidak berubah
-    assert stok_fisik(app, stok_awal["minyak"]) == 100         # minyak juga tidak dikirim
+    assert status(app, pid) == "DISETUJUI"
+    assert stok_fisik(app, stok_awal["minyak"]) == 100
 
 
 def test_setelah_qty_diubah_pengiriman_berhasil(client, app, stok_awal):
@@ -225,14 +215,12 @@ def test_tidak_bisa_dikirim_dua_kali(client, app, stok_awal):
     setujui(client, pid, qty(stok_awal, 30, 5))
     assert kirim(client, pid).status_code == 200
     assert kirim(client, pid).status_code == 400
-    assert stok_fisik(app, stok_awal["minyak"]) == 70   # hanya berkurang sekali
+    assert stok_fisik(app, stok_awal["minyak"]) == 70
 
-
-# ---------------------------------------------------------------- menerima
 
 def test_toko_konfirmasi_diterima_setelah_dikirim(client, app, stok_awal):
     pid = ajukan(client, stok_awal)
-    assert client.post(f"/api/permintaan/{pid}/terima").status_code == 400  # belum dikirim
+    assert client.post(f"/api/permintaan/{pid}/terima").status_code == 400
 
     setujui(client, pid, qty(stok_awal, 30, 5))
     kirim(client, pid)
@@ -240,8 +228,6 @@ def test_toko_konfirmasi_diterima_setelah_dikirim(client, app, stok_awal):
     assert client.post(f"/api/permintaan/{pid}/terima").status_code == 200
     assert status(app, pid) == "DITERIMA"
 
-
-# ---------------------------------------------------------------- hak akses
 
 def test_hak_akses_aksi_per_role(client, stok_awal):
     pid = ajukan(client, stok_awal)

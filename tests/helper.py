@@ -1,5 +1,3 @@
-"""Fungsi bantu yang dipakai banyak file test."""
-
 PASSWORD = "rahasia123"
 
 

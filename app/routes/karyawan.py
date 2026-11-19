@@ -1,4 +1,3 @@
-"""Master Karyawan: akun login dan role (khusus Admin)."""
 from flask import Blueprint, abort, g, jsonify
 
 from app.models import user as model_user
@@ -60,10 +59,9 @@ def tambah():
 @wajib_login(ADMIN)
 def ubah(user_id):
     user = cari_atau_404(user_id)
-    data = ambil_json(["nama", "role", "toko_id"])  # username tidak bisa diubah
+    data = ambil_json(["nama", "role", "toko_id"])
     role, toko_id = baca_role_dan_toko(data)
 
-    # Supaya Admin tidak mengunci dirinya sendiri dari menu Admin.
     if user["_id"] == g.user["_id"] and role != ADMIN:
         raise ValidasiError("Anda tidak bisa mengubah role akun Anda sendiri.")
 

@@ -1,7 +1,3 @@
-"""Model supplier (collection master_supplier).
-
-{ "kode": "SUP-01", "nama": "PT Sumber Pangan", "telepon": "024-...", "alamat": "...", "aktif": True }
-"""
 from datetime import datetime, timezone
 
 from app.db import get_db

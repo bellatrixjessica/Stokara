@@ -1,14 +1,5 @@
-/* =====================================================================
- * Permintaan Barang (halaman Kepala Toko)
- * - Ajukan permintaan ke gudang
- * - Batalkan (selama masih Diajukan)
- * - Konfirmasi barang diterima (setelah Dikirim)
- * Hanya permintaan toko sendiri yang tampil (dibatasi di server).
- * Fungsi bersama (label status, jendela detail) ada di permintaan_bersama.js
- * ===================================================================== */
-
 let permintaanAktif = null;
-let pilihanProduk = []; // [{ id, value: "P-0001 · Minyak Goreng 1L", satuan }]
+let pilihanProduk = [];
 
 webix.ready(function () {
   const tabel = {
@@ -66,7 +57,7 @@ webix.ready(function () {
 
   muatPilihanProduk();
   muatData().then(() => {
-    const nomor = nomorDariAlamat(); // datang dari klik notifikasi
+    const nomor = nomorDariAlamat();
     if (nomor) {
       const p = $$("tabel").find((x) => x.nomor === nomor, true);
       if (p) bukaDetail(p.id);
@@ -74,7 +65,6 @@ webix.ready(function () {
   });
 });
 
-// Qty disetujui yang lebih kecil dari diminta ditandai kuning
 function kolomDisetujui(i) {
   if (i.qty_disetujui === null) return "–";
   if (i.qty_disetujui < i.qty_diminta) return '<b class="teks-amber">' + angka(i.qty_disetujui) + "</b>";
@@ -95,7 +85,6 @@ function saring() {
   $$("tabel").filter((p) => p.nomor.toLowerCase().includes(kata));
 }
 
-// ---------- Jendela detail ----------
 
 async function bukaDetail(id) {
   const p = await api("GET", "/api/permintaan/" + id);
@@ -132,7 +121,6 @@ function selesaiAksi(hasil) {
   muatData();
 }
 
-// ---------- Form ajukan permintaan ----------
 
 function buatFormAjukan() {
   buatJendela("jendelaAjukan", "Ajukan Permintaan", [
@@ -184,7 +172,6 @@ function bukaFormAjukan() {
   $$("jendelaAjukan").show();
 }
 
-// Tambah produk ke daftar. Kalau produknya sudah ada, qty-nya dijumlahkan.
 function tambahItem() {
   const produkId = $$("pilihProduk").getValue();
   const qty = Number($$("isiQty").getValue());

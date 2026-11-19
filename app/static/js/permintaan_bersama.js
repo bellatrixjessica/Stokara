@@ -1,9 +1,3 @@
-/* =====================================================================
- * Bagian yang SAMA untuk halaman permintaan gudang dan halaman toko:
- * label status, label "Qty disesuaikan", jumlah qty, dan jendela detail.
- * Dimuat sebelum gudang/permintaan.js atau toko/permintaan.js.
- * ===================================================================== */
-
 const STATUS_PERMINTAAN = {
   DIAJUKAN: { label: "Diajukan", css: "b-biru" },
   DISETUJUI: { label: "Disetujui", css: "b-ungu" },
@@ -13,7 +7,6 @@ const STATUS_PERMINTAAN = {
   DIBATALKAN: { label: "Dibatalkan", css: "b-abu" },
 };
 
-// Pilihan untuk kotak filter status
 function opsiStatus() {
   const opsi = [{ id: "semua", value: "Semua status" }];
   for (const kode in STATUS_PERMINTAAN) {
@@ -27,16 +20,11 @@ function labelStatus(status) {
   return '<span class="badge ' + s.css + '">' + s.label + "</span>";
 }
 
-/**
- * True kalau gudang menyetujui lebih sedikit dari yang diminta toko.
- * Ditampilkan sebagai label kuning "Qty disesuaikan".
- */
 function qtyDisesuaikan(p) {
   if (!["DISETUJUI", "DIKIRIM", "DITERIMA"].includes(p.status)) return false;
   return p.items.some((i) => i.qty_disetujui < i.qty_diminta);
 }
 
-// Label status + label "Qty disesuaikan" (kolom Status di tabel)
 function badgePermintaan(p) {
   let html = labelStatus(p.status);
   if (qtyDisesuaikan(p)) {
@@ -45,7 +33,6 @@ function badgePermintaan(p) {
   return html;
 }
 
-// Jumlah satu kolom qty. Kalau belum diisi sama sekali (null), tampil "–".
 function totalQty(p, kolom) {
   if (p.items.every((i) => i[kolom] === null || i[kolom] === undefined)) return "–";
   return angka(p.items.reduce((jumlah, i) => jumlah + (i[kolom] || 0), 0));
@@ -55,12 +42,10 @@ function angkaAtauStrip(n) {
   return n === null || n === undefined ? "–" : angka(n);
 }
 
-// Nomor di alamat, contoh /permintaan?nomor=PRM-261119-0001 (dari klik notifikasi)
 function nomorDariAlamat() {
   return new URLSearchParams(window.location.search).get("nomor");
 }
 
-// Kolom pertama tabel: nomor + tanggal kecil di bawahnya
 function kolomNomor() {
   return {
     id: "nomor", header: "Nomor", width: 170, css: "dua-baris",
@@ -68,11 +53,6 @@ function kolomNomor() {
   };
 }
 
-// ---------------------------------------------------------------------
-// Jendela detail permintaan
-// kolom  : kolom tabel produk (berbeda untuk gudang dan toko)
-// tombol : tombol aksi di bawah (disembunyikan dulu, diatur oleh halaman)
-// ---------------------------------------------------------------------
 
 function buatJendelaPermintaan(kolom, tombol) {
   webix.ui({
@@ -115,7 +95,6 @@ function buatJendelaPermintaan(kolom, tombol) {
   });
 }
 
-// Isi jendela detail dengan data permintaan p
 function isiJendelaPermintaan(p, baris) {
   $$("judulPermintaan").setHTML("Permintaan " + aman(p.nomor) + " " + badgePermintaan(p));
 

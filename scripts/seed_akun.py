@@ -1,20 +1,12 @@
-"""Membuat 3 toko dan 6 akun contoh di database Stokara.
-
-Jalankan dari folder D:\\Stokara:
-    python scripts/seed_akun.py
-
-Password semua akun diambil dari DEMO_PASSWORD di file .env.
-Aman dijalankan berkali-kali: data yang sudah ada dilewati.
-"""
 import os
 import sys
 from datetime import datetime, timezone
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from app import create_app  # noqa: E402
-from app.models import user as model_user  # noqa: E402
-from app.models.user import ADMIN, KEPALA_GUDANG, KEPALA_TOKO, STAFF_GUDANG  # noqa: E402
+from app import create_app
+from app.models import user as model_user
+from app.models.user import ADMIN, KEPALA_GUDANG, KEPALA_TOKO, STAFF_GUDANG
 
 TOKO = [
     {"kode": "TK-01", "nama": "Toko Salatiga 01", "alamat": "Jl. Diponegoro No. 12, Salatiga"},
@@ -22,7 +14,6 @@ TOKO = [
     {"kode": "TK-03", "nama": "Toko Semarang Tengah 01", "alamat": "Jl. Pemuda No. 88, Semarang"},
 ]
 
-# (username, nama, role, kode toko)
 AKUN = [
     ("admin", "Admin Stokara", ADMIN, None),
     ("kepala.gudang", "Kepala Gudang Semarang", KEPALA_GUDANG, None),

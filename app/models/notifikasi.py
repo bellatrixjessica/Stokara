@@ -1,18 +1,3 @@
-"""Model notifikasi di dalam aplikasi (collection notifikasi).
-
-Notifikasi dikirim ke:
-- satu ROLE, contoh semua Kepala Gudang  -> {"untuk_role": "kepala_gudang"}
-- satu TOKO, yaitu Kepala Toko toko itu -> {"untuk_toko_id": ObjectId}
-
-{
-    "untuk_role": "kepala_gudang", "untuk_toko_id": None,
-    "judul": "Permintaan baru PRM-261119-0001",
-    "pesan": "Toko Salatiga 01 meminta 3 produk.",
-    "link": "/permintaan?nomor=PRM-261119-0001",
-    "dibaca_oleh": [ObjectId, ...],   <- id user yang sudah membaca
-    "waktu": datetime
-}
-"""
 from app.db import get_db
 from app.utils.waktu import sekarang
 
@@ -38,7 +23,6 @@ def kirim_ke_toko(toko_id, judul, pesan, link):
 
 
 def filter_untuk(user):
-    """Notifikasi mana yang menjadi milik user ini."""
     if user["toko_id"]:
         return {"untuk_toko_id": user["toko_id"]}
     return {"untuk_role": user["role"]}
@@ -65,5 +49,4 @@ def jumlah_belum_dibaca(user):
 
 
 def tandai_semua_dibaca(user):
-    # $addToSet: tambahkan id user ke daftar, tapi tidak dobel kalau sudah ada.
     get_db().notifikasi.update_many(filter_untuk(user), {"$addToSet": {"dibaca_oleh": user["_id"]}})

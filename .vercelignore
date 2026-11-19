@@ -1,13 +1,9 @@
-# File yang TIDAK ikut di-upload ke Vercel.
-# .env berisi rahasia: di Vercel nilainya diisi lewat Environment Variables.
 .env
 .env.local
 venv/
 __pycache__/
 .pytest_cache/
-.claude/
 tests/
 scripts/
-docs/
 requirements-dev.txt
 pytest.ini

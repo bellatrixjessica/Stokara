@@ -1,9 +1,3 @@
-/* =====================================================================
- * Master Toko (Admin): daftar, tambah, ubah, aktif/nonaktif.
- * API: GET/POST /api/master/toko, PUT /api/master/toko/<id>,
- *      POST /api/master/toko/<id>/status
- * ===================================================================== */
-
 webix.ready(function () {
   const tabel = {
     view: "datatable",
@@ -12,7 +6,7 @@ webix.ready(function () {
     select: "row",
     rowHeight: 46,
     columns: [
-      { id: "kode", header: "Kode", width: 100, template: "#!kode#", hidden: LAYAR_KECIL },  // #!...# = isi di-escape (aman dari XSS)
+      { id: "kode", header: "Kode", width: 100, template: "#!kode#", hidden: LAYAR_KECIL },
       { id: "nama", header: "Nama toko", fillspace: 1, minWidth: 120, template: "#!nama#" },
       { id: "alamat", header: "Alamat", fillspace: 2, minWidth: 200, template: "#!alamat#", hidden: LAYAR_KECIL },
       { id: "aktif", header: "Status", width: LAYAR_KECIL ? 80 : 100, template: badgeStatus },
@@ -30,7 +24,7 @@ webix.ready(function () {
 
   const toolbar = [
     { view: "search", id: "cari", placeholder: "Cari kode, nama, atau alamat...", maxWidth: 320, on: { onTimedKeyPress: saring } },
-    LAYAR_KECIL ? { width: 8 } : {}, // jarak antara kotak cari dan tombol
+    LAYAR_KECIL ? { width: 8 } : {},
     { view: "button", value: LAYAR_KECIL ? "Tambah" : "Tambah Toko", css: "webix_primary", width: LAYAR_KECIL ? 90 : 130, click: () => bukaForm(null) },
   ];
 
@@ -47,7 +41,6 @@ webix.ready(function () {
   muatData();
 });
 
-// Tombol Ubah dan Aktifkan/Nonaktifkan di setiap baris
 function tombolAksi(baris) {
   const status = baris.aktif ? "Nonaktifkan" : "Aktifkan";
   if (LAYAR_KECIL) {
@@ -79,7 +72,7 @@ function bukaForm(toko) {
   if (toko) {
     $$("jendela_judul").setValue("Ubah Toko");
     form.setValues(toko);
-    form.elements.kode.disable(); // kode tidak bisa diubah
+    form.elements.kode.disable();
   } else {
     $$("jendela_judul").setValue("Tambah Toko");
     form.elements.kode.enable();

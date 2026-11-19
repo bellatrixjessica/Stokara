@@ -1,4 +1,3 @@
-"""Test aturan bisnis stock opname."""
 import pytest
 from bson import ObjectId
 
@@ -8,7 +7,6 @@ from tests.helper import login
 
 @pytest.fixture
 def stok_awal(app, produk):
-    """Minyak: stok sistem 50. Beras: stok sistem 10."""
     with app.app_context():
         get_db().master_produk.update_one({"_id": produk["minyak"]}, {"$set": {"stok": 50}})
         get_db().master_produk.update_one({"_id": produk["beras"]}, {"$set": {"stok": 10}})
@@ -21,7 +19,6 @@ def sebagai(client, username):
 
 
 def hitung(client, produk, minyak=47, beras=10):
-    """Staff Gudang mencatat hasil hitung. Mengembalikan id opname."""
     sebagai(client, "staff.gudang")
     items = [{"produk_id": str(produk["minyak"]), "qty": minyak}]
     if beras is not None:
@@ -42,7 +39,7 @@ def test_hasil_hitung_mencatat_selisih_tanpa_mengubah_stok(client, app, stok_awa
     opname = client.get("/api/opname").get_json()[0]
     assert opname["status"] == "MENUNGGU"
     assert [(i["stok_sistem"], i["stok_hitung"], i["selisih"]) for i in opname["items"]] == [(50, 47, -3), (10, 12, 2)]
-    assert stok(app, stok_awal["minyak"]) == 50   # belum berubah sebelum disetujui
+    assert stok(app, stok_awal["minyak"]) == 50
     assert oid
 
 
@@ -75,18 +72,18 @@ def test_produk_tanpa_selisih_tidak_membuat_mutasi(client, app, stok_awal):
 
 
 def test_yang_dikoreksi_selisihnya_bukan_angka_hitungan(client, app, stok_awal):
-    oid = hitung(client, stok_awal, minyak=47, beras=None)        # selisih -3
-    with app.app_context():                                        # setelah dihitung, ada barang masuk 20
+    oid = hitung(client, stok_awal, minyak=47, beras=None)
+    with app.app_context():
         get_db().master_produk.update_one({"_id": stok_awal["minyak"]}, {"$inc": {"stok": 20}})
 
     sebagai(client, "kepala.gudang")
     client.post(f"/api/opname/{oid}/setujui")
-    assert stok(app, stok_awal["minyak"]) == 67                    # 70 - 3, bukan 47
+    assert stok(app, stok_awal["minyak"]) == 67
 
 
 def test_koreksi_yang_membuat_minus_ditolak(client, app, stok_awal):
-    oid = hitung(client, stok_awal, minyak=47, beras=None)        # selisih -3
-    with app.app_context():                                        # setelah dihitung, stok tinggal 2
+    oid = hitung(client, stok_awal, minyak=47, beras=None)
+    with app.app_context():
         get_db().master_produk.update_one({"_id": stok_awal["minyak"]}, {"$set": {"stok": 2}})
 
     sebagai(client, "kepala.gudang")
@@ -109,7 +106,7 @@ def test_tidak_bisa_disetujui_dua_kali(client, app, stok_awal):
     sebagai(client, "kepala.gudang")
     client.post(f"/api/opname/{oid}/setujui")
     assert client.post(f"/api/opname/{oid}/setujui").status_code == 400
-    assert stok(app, stok_awal["minyak"]) == 47   # hanya dikoreksi sekali
+    assert stok(app, stok_awal["minyak"]) == 47
 
 
 def test_produk_yang_masih_menunggu_tidak_bisa_dihitung_lagi(client, stok_awal):
@@ -121,11 +118,11 @@ def test_produk_yang_masih_menunggu_tidak_bisa_dihitung_lagi(client, stok_awal):
 
 def test_hak_akses_opname(client, stok_awal):
     oid = hitung(client, stok_awal)
-    assert client.post(f"/api/opname/{oid}/setujui").status_code == 403    # Staff tidak bisa menyetujui
+    assert client.post(f"/api/opname/{oid}/setujui").status_code == 403
 
     sebagai(client, "kepala.gudang")
     data = {"catatan": "", "items": [{"produk_id": str(stok_awal["beras"]), "qty": 1}]}
-    assert client.post("/api/opname", json=data).status_code == 403        # Kepala Gudang tidak menghitung
+    assert client.post("/api/opname", json=data).status_code == 403
 
     sebagai(client, "toko.salatiga01")
     assert client.get("/api/opname").status_code == 403

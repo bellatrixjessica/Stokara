@@ -1,22 +1,3 @@
-"""Insight dashboard: fill rate, safety stock, reorder point, dan saran restock.
-
-Semua dihitung dari permintaan PERIODE_HARI (30) hari terakhir.
-
-RUMUS (sama dengan README)
-- Demand per hari    = total qty diminta / 30          (semua status kecuali DIBATALKAN)
-- Fill rate          = total qty dikirim / total qty diminta x 100%
-                       (hanya DIKIRIM, DITERIMA, dan DITOLAK; DITOLAK dihitung dikirim 0)
-- Safety stock (SS)  = demand per hari x hari pengaman (2)               -> dibulatkan ke atas
-- Reorder point (ROP)= demand per hari x lead time + SS                  -> dibulatkan ke atas
-- Habis dalam        = stok tersedia / demand per hari (hari)
-- Saran restock      = demand per hari x (lead time + cadangan 7) - stok tersedia
-                                                       -> dibulatkan ke atas, minimal 0
-STATUS
-- KRITIS          : tersedia <= SS
-- PERLU_RESTOCK   : tersedia <= ROP
-- AMAN            : tersedia > ROP
-- TANPA_PERMINTAAN: demand per hari = 0
-"""
 import math
 from datetime import timedelta
 
@@ -26,20 +7,14 @@ from app.db import get_db
 from app.models import stok as model_stok
 from app.utils.waktu import WIB, sekarang
 
-SELESAI = ["DIKIRIM", "DITERIMA", "DITOLAK"]   # permintaan yang dihitung di fill rate
+SELESAI = ["DIKIRIM", "DITERIMA", "DITOLAK"]
 
 
 def awal_periode():
     return sekarang() - timedelta(days=current_app.config["PERIODE_HARI"])
 
 
-# ---------------------------------------------------------------- rumus satu produk
-
 def rumus_produk(total_diminta, lead_time, tersedia, periode=30, hari_pengaman=2, cadangan=7):
-    """Rumus insight untuk SATU produk. Fungsi murni (tanpa database), jadi mudah dites.
-
-    Contoh README: rumus_produk(360, 3, 80) -> demand 12, SS 24, ROP 60, habis 6.7 hari, saran 40, AMAN
-    """
     demand = total_diminta / periode
     if demand == 0:
         return {"demand_per_hari": 0, "safety_stock": 0, "reorder_point": 0,
@@ -66,16 +41,7 @@ def rumus_produk(total_diminta, lead_time, tersedia, periode=30, hari_pengaman=2
     }
 
 
-# ---------------------------------------------------------------- data dari database
-
 def demand_per_produk():
-    """Total qty diminta per produk dalam periode, memakai AGGREGATION PIPELINE MongoDB.
-
-    $match  : ambil permintaan 30 hari terakhir yang tidak dibatalkan
-    $unwind : pecah array items, satu dokumen per produk
-    $group  : jumlahkan qty_diminta per produk_id
-    Hasil   : {produk_id: total_qty_diminta}
-    """
     pipeline = [
         {"$match": {"dibuat": {"$gte": awal_periode()}, "status": {"$ne": "DIBATALKAN"}}},
         {"$unwind": "$items"},
@@ -85,7 +51,6 @@ def demand_per_produk():
 
 
 def insight_produk():
-    """Insight untuk setiap produk aktif, diurutkan: Kritis, Perlu restock, Aman, Tanpa permintaan."""
     config = current_app.config
     demand = demand_per_produk()
     hasil = []
@@ -103,12 +68,11 @@ def insight_produk():
 
 
 def fill_rate():
-    """Fill rate keseluruhan dan per toko, dari permintaan yang sudah selesai dalam periode."""
     total = {"diminta": 0, "dikirim": 0}
     per_toko = {}
     for p in get_db().permintaan.find({"dibuat": {"$gte": awal_periode()}, "status": {"$in": SELESAI}}):
         diminta = sum(i["qty_diminta"] for i in p["items"])
-        dikirim = sum(i["qty_dikirim"] or 0 for i in p["items"])   # DITOLAK: qty_dikirim kosong = 0
+        dikirim = sum(i["qty_dikirim"] or 0 for i in p["items"])
         total["diminta"] += diminta
         total["dikirim"] += dikirim
         toko = per_toko.setdefault(p["toko"], {"toko": p["toko"], "diminta": 0, "dikirim": 0})
@@ -124,7 +88,6 @@ def fill_rate():
 
 
 def tren_harian():
-    """Qty diminta dan dikirim per hari (tanggal WIB) selama periode, untuk grafik."""
     jumlah_hari = current_app.config["PERIODE_HARI"]
     hari_ini = sekarang().astimezone(WIB).date()
     tren = {}
@@ -145,7 +108,6 @@ def jumlah_status(status):
 
 
 def dashboard():
-    """Semua data untuk halaman Dashboard dalam satu paket."""
     produk = insight_produk()
     akhir = sekarang().astimezone(WIB)
     awal = akhir - timedelta(days=current_app.config["PERIODE_HARI"] - 1)

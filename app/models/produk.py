@@ -1,17 +1,3 @@
-"""Model produk (collection master_produk).
-
-{
-    "kode": "P-0001",
-    "nama": "Minyak Goreng 1L",
-    "kategori": "Sembako",
-    "satuan": "PCS",
-    "supplier_id": ObjectId,
-    "lead_time_hari": 2,     <- lama barang datang setelah dipesan ke supplier
-    "stok": 0,               <- stok fisik. Hanya berubah lewat barang masuk,
-                                pengiriman, dan opname (tidak diubah di form produk)
-    "aktif": True
-}
-"""
 from datetime import datetime, timezone
 
 from app.db import get_db
@@ -21,7 +7,6 @@ SATUAN = ["PCS", "PACK", "KARTON", "BOX", "LUSIN"]
 
 
 def semua():
-    """Semua produk, ditambah nama supplier-nya."""
     nama_supplier = {}
     for s in get_db().master_supplier.find():
         nama_supplier[s["_id"]] = s["nama"]
@@ -55,7 +40,7 @@ def tambah(kode, nama, kategori, satuan, supplier_id, lead_time_hari):
         "satuan": satuan,
         "supplier_id": supplier_id,
         "lead_time_hari": lead_time_hari,
-        "stok": 0,  # produk baru belum punya stok
+        "stok": 0,
         "aktif": True,
         "dibuat": datetime.now(timezone.utc),
     }

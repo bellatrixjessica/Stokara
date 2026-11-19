@@ -1,38 +1,3 @@
-"""Model permintaan barang dari toko ke gudang (collection permintaan).
-
-ALUR STATUS
-                 ┌──────── tolak (Kepala Gudang, wajib alasan) ────────┐
-                 │                                                       ▼
-  DIAJUKAN ──setujui──► DISETUJUI ──kirim──► DIKIRIM ──terima──► DITERIMA
-     │   (Kepala Gudang)   │  ▲   (Staff Gudang)    (Kepala Toko)
-     │                     └──┘ ubah qty disetujui (Kepala Gudang)
-     │                     │
-     │                     └──tolak──► DITOLAK
-     └──batal (Kepala Toko)──► DIBATALKAN
-
-ATURAN BISNIS
-1. Qty disetujui <= qty diminta, dan <= stok tersedia saat disetujui.
-2. Tidak ada pengiriman sebagian: qty dikirim SELALU = qty disetujui.
-   Kalau stok fisik ternyata kurang saat akan dikirim, pengiriman ditolak.
-   Kepala Gudang lalu mengubah qty disetujui atau menolak permintaan.
-3. Batal hanya dari DIAJUKAN (oleh toko). Tolak dari DIAJUKAN atau DISETUJUI.
-4. Setiap perubahan status hanya berhasil kalau statusnya masih sesuai
-   (mencegah klik dua kali atau dua orang memproses bersamaan).
-
-BENTUK DOKUMEN
-{
-    "nomor": "PRM-261119-0001",
-    "toko_id": ObjectId, "toko": "Toko Salatiga 01",
-    "status": "DIAJUKAN",
-    "catatan": "Stok akhir pekan",
-    "items": [{"produk_id": ObjectId, "kode": "P-0001", "nama": "Minyak Goreng 1L",
-               "satuan": "PCS", "qty_diminta": 30, "qty_disetujui": None, "qty_dikirim": None}],
-    "alasan_tolak": None,
-    "diajukan_oleh": {"id": ObjectId, "nama": "Kepala Toko Salatiga 01"},
-    "dibuat": datetime, "diperbarui": datetime,
-    "riwayat": [{"status": "DIAJUKAN", "waktu": datetime, "oleh": "...", "catatan": ""}]
-}
-"""
 from app.db import get_db
 from app.models import notifikasi
 from app.models import stok as model_stok
@@ -50,14 +15,11 @@ DIBATALKAN = "DIBATALKAN"
 SEMUA_STATUS = [DIAJUKAN, DISETUJUI, DIKIRIM, DITERIMA, DITOLAK, DIBATALKAN]
 
 
-# ---------------------------------------------------------------- membaca
-
 def cari(permintaan_id):
     return get_db().permintaan.find_one({"_id": permintaan_id})
 
 
 def daftar(toko_id=None, status=None, batas=300):
-    """toko_id diisi untuk Kepala Toko (hanya tokonya sendiri)."""
     filter_ = {}
     if toko_id is not None:
         filter_["toko_id"] = toko_id
@@ -67,11 +29,6 @@ def daftar(toko_id=None, status=None, batas=300):
 
 
 def info_stok(permintaan):
-    """Tambahkan stok fisik dan stok tersedia ke setiap item (untuk layar gudang).
-
-    Untuk permintaan berstatus DISETUJUI, qty yang sudah dipesan untuk permintaan ini
-    sendiri dihitung kembali sebagai tersedia, karena memang dipesan untuknya.
-    """
     dipesan = model_stok.qty_dipesan()
     for item in permintaan["items"]:
         produk = get_db().master_produk.find_one({"_id": item["produk_id"]})
@@ -83,19 +40,12 @@ def info_stok(permintaan):
     return permintaan
 
 
-# ---------------------------------------------------------------- bantuan
-
 def link(permintaan, untuk_toko):
     halaman = "/permintaan-saya" if untuk_toko else "/permintaan"
     return halaman + "?nomor=" + permintaan["nomor"]
 
 
 def ubah_status(permintaan, dari, ke, user, perubahan=None, catatan=""):
-    """Ubah status HANYA jika status di database masih `dari`.
-
-    Kalau dua orang menekan tombol bersamaan, orang kedua mendapat pesan
-    karena status di database sudah berubah (matched_count = 0).
-    """
     isi_baru = {"status": ke, "diperbarui": sekarang()}
     if perubahan:
         isi_baru.update(perubahan)
@@ -117,7 +67,6 @@ def cek_status(permintaan, *status_boleh):
 
 
 def cek_qty_disetujui(permintaan, qty_baru):
-    """qty_baru: {produk_id: qty}. Memeriksa aturan bisnis nomor 1."""
     produk_permintaan = {item["produk_id"] for item in permintaan["items"]}
     if set(qty_baru) != produk_permintaan:
         raise ValidasiError("Qty disetujui harus diisi untuk setiap produk di permintaan ini.")
@@ -135,16 +84,12 @@ def cek_qty_disetujui(permintaan, qty_baru):
 
 
 def ringkasan_qty(permintaan):
-    """Contoh: "55 dari 60 qty" untuk pesan notifikasi."""
     diminta = sum(i["qty_diminta"] for i in permintaan["items"])
     disetujui = sum(i["qty_disetujui"] or 0 for i in permintaan["items"])
     return disetujui, diminta
 
 
-# ---------------------------------------------------------------- aksi
-
 def ajukan(toko_id, catatan, items, user):
-    """Kepala Toko mengajukan permintaan. items: [{"produk_id", "qty"}] (sudah divalidasi)."""
     db = get_db()
     toko = db.master_toko.find_one({"_id": toko_id})
     if toko is None or not toko["aktif"]:
@@ -185,7 +130,6 @@ def ajukan(toko_id, catatan, items, user):
 
 
 def batalkan(permintaan, user):
-    """Kepala Toko membatalkan permintaannya sendiri (hanya dari DIAJUKAN)."""
     cek_status(permintaan, DIAJUKAN)
     ubah_status(permintaan, DIAJUKAN, DIBATALKAN, user)
     notifikasi.kirim_ke_role(
@@ -195,7 +139,6 @@ def batalkan(permintaan, user):
 
 
 def setujui(permintaan, qty_baru, user):
-    """Kepala Gudang menyetujui. qty_baru: {produk_id: qty}."""
     cek_status(permintaan, DIAJUKAN)
     cek_qty_disetujui(permintaan, qty_baru)
 
@@ -213,7 +156,6 @@ def setujui(permintaan, qty_baru, user):
 
 
 def ubah_qty(permintaan, qty_baru, user):
-    """Kepala Gudang mengubah qty disetujui selama status masih DISETUJUI."""
     cek_status(permintaan, DISETUJUI)
     cek_qty_disetujui(permintaan, qty_baru)
 
@@ -229,21 +171,16 @@ def ubah_qty(permintaan, qty_baru, user):
 
 
 def tolak(permintaan, alasan, user):
-    """Kepala Gudang menolak dari DIAJUKAN atau DISETUJUI, wajib dengan alasan."""
     cek_status(permintaan, DIAJUKAN, DISETUJUI)
     ubah_status(permintaan, permintaan["status"], DITOLAK, user, {"alasan_tolak": alasan}, catatan=alasan)
-    # Stok yang dipesan otomatis kembali tersedia, karena qty_dipesan()
-    # hanya menghitung permintaan berstatus DISETUJUI.
     notifikasi.kirim_ke_toko(
         permintaan["toko_id"], f"{permintaan['nomor']} ditolak", "Alasan: " + alasan, link(permintaan, True),
     )
 
 
 def kirim(permintaan, user):
-    """Staff Gudang mengirim. Tidak ada pengiriman sebagian (aturan bisnis nomor 2)."""
     cek_status(permintaan, DISETUJUI)
 
-    # 1. Periksa stok fisik SEMUA produk dulu.
     kurang = []
     for item in permintaan["items"]:
         produk = get_db().master_produk.find_one({"_id": item["produk_id"]})
@@ -255,11 +192,9 @@ def kirim(permintaan, user):
             "Kepala Gudang perlu mengubah qty disetujui atau menolak permintaan ini."
         )
 
-    # 2. Ubah status dulu (mencegah pengiriman ganda), qty dikirim = qty disetujui.
     items = [{**simpan_item(i), "qty_dikirim": i["qty_disetujui"]} for i in permintaan["items"]]
     ubah_status(permintaan, DISETUJUI, DIKIRIM, user, {"items": items})
 
-    # 3. Kurangi stok fisik, tercatat sebagai mutasi KELUAR.
     for item in items:
         if item["qty_dikirim"] > 0:
             model_stok.kurangi_stok(
@@ -274,17 +209,14 @@ def kirim(permintaan, user):
 
 
 def terima(permintaan, user):
-    """Kepala Toko mengonfirmasi barang sudah diterima."""
     cek_status(permintaan, DIKIRIM)
     ubah_status(permintaan, DIKIRIM, DITERIMA, user)
 
 
 def simpan_item(item):
-    """Item tanpa field tambahan dari info_stok() (stok_fisik, tersedia)."""
     return {k: v for k, v in item.items() if k not in ("stok_fisik", "tersedia")}
 
 
 def pilihan_produk():
-    """Produk aktif untuk form pengajuan Kepala Toko (tanpa angka stok gudang)."""
     return [{"id": str(p["_id"]), "value": p["kode"] + " · " + p["nama"], "satuan": p["satuan"]}
             for p in get_db().master_produk.find({"aktif": True}).sort("kode", 1)]

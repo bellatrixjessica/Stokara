@@ -1,8 +1,3 @@
-"""Stock opname.
-
-- Staff Gudang  : mencatat hasil hitung fisik
-- Kepala Gudang : menyetujui (stok dikoreksi) atau menolak
-"""
 from flask import Blueprint, abort, g, jsonify
 
 from app.models import opname as model
@@ -45,7 +40,7 @@ def produk_untuk_dihitung():
 def buat():
     data = ambil_json(["catatan", "items"])
     nomor = model.buat(
-        items=daftar_item(data, maks=200, qty_minimal=0),  # qty = hasil hitung, boleh 0 (habis)
+        items=daftar_item(data, maks=200, qty_minimal=0),
         catatan=teks(data, "catatan", "Catatan", wajib=False, maks=200),
         user=g.user,
     )

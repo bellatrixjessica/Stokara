@@ -1,11 +1,8 @@
-"""Test login, logout, dan pembatasan akses per role."""
 from app.db import get_db
 from app.models.user import ADMIN
 from app.utils.auth import wajib_login
 from tests.helper import login
 
-
-# ---------- Login ----------
 
 def test_login_berhasil(client):
     respon = login(client, "kepala.gudang")
@@ -43,8 +40,6 @@ def test_password_disimpan_dalam_bentuk_hash(app):
     assert user["password_hash"].startswith("scrypt:")
 
 
-# ---------- Validasi & sanitasi ----------
-
 def test_injeksi_nosql_ditolak(client):
     respon = client.post("/api/login", json={"username": {"$ne": ""}, "password": {"$ne": ""}})
     assert respon.status_code == 400
@@ -65,8 +60,6 @@ def test_password_kosong_ditolak(client):
     respon = client.post("/api/login", json={"username": "admin", "password": ""})
     assert respon.status_code == 400
 
-
-# ---------- Session ----------
 
 def test_data_saya_tanpa_login_ditolak(client):
     assert client.get("/api/saya").status_code == 401
@@ -94,10 +87,7 @@ def test_user_dinonaktifkan_saat_masih_login_langsung_keluar(client, app):
     assert client.get("/api/saya").status_code == 401
 
 
-# ---------- Hak akses per role ----------
-
 def test_hanya_role_yang_diizinkan_bisa_akses(app):
-    # Route contoh khusus Admin, dibuat hanya untuk test ini.
     @app.get("/api/contoh-khusus-admin")
     @wajib_login(ADMIN)
     def contoh():

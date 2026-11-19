@@ -1,17 +1,3 @@
-"""Laporan periode untuk Kepala Gudang (semua laporan) dan Kepala Toko (permintaan tokonya).
-
-Setiap laporan menghasilkan bentuk data yang SAMA, jadi satu halaman bisa
-menampilkan dan mengunduh semuanya:
-{
-    "judul": "Laporan Permintaan Toko",
-    "periode": "21/10/2026 – 19/11/2026",
-    "ringkasan": [{"label": "Fill rate", "nilai": 86.8, "persen": True, "ket": "..."}, ...],
-    "baris": [ {...satu baris tabel...}, ... ]
-}
-
-Tanggal yang dipilih pengguna adalah tanggal WIB. Di database waktu disimpan UTC,
-jadi "19 Nov 2026" diubah menjadi rentang 19 Nov 00.00 WIB sampai 20 Nov 00.00 WIB.
-"""
 from datetime import datetime, time, timedelta, timezone
 
 from app.db import get_db
@@ -20,7 +6,7 @@ from app.models.permintaan import DIBATALKAN, DIKIRIM, DISETUJUI, DITERIMA, DITO
 from app.utils.validasi import ValidasiError
 from app.utils.waktu import WIB
 
-MAKS_HARI = 366   # satu laporan paling panjang satu tahun
+MAKS_HARI = 366
 
 JUDUL = {
     "permintaan": "Laporan Permintaan Toko",
@@ -31,13 +17,12 @@ JUDUL = {
 
 
 def rentang_waktu(dari, sampai):
-    """Dua tanggal WIB -> filter waktu MongoDB dalam UTC: {"$gte": awal, "$lt": akhir}."""
     if dari > sampai:
         raise ValidasiError("Tanggal awal tidak boleh setelah tanggal akhir.")
     if (sampai - dari).days + 1 > MAKS_HARI:
         raise ValidasiError(f"Periode laporan maksimal {MAKS_HARI} hari.")
     awal = datetime.combine(dari, time.min, tzinfo=WIB)
-    akhir = datetime.combine(sampai + timedelta(days=1), time.min, tzinfo=WIB)  # sampai akhir hari
+    akhir = datetime.combine(sampai + timedelta(days=1), time.min, tzinfo=WIB)
     return {"$gte": awal.astimezone(timezone.utc), "$lt": akhir.astimezone(timezone.utc)}
 
 
@@ -50,9 +35,7 @@ def persen(bagian, total):
 
 
 def buat(jenis, dari, sampai, toko_id=None):
-    """Pintu masuk semua laporan. toko_id hanya dipakai laporan permintaan."""
     if jenis == "restock":
-        # Saran restock adalah keadaan SAAT INI (dari 30 hari terakhir), bukan per periode.
         return laporan_restock()
 
     waktu = rentang_waktu(dari, sampai)
@@ -65,13 +48,7 @@ def buat(jenis, dari, sampai, toko_id=None):
     return {"judul": JUDUL[jenis], "periode": teks_periode(dari, sampai), **hasil}
 
 
-# ---------------------------------------------------------------- permintaan toko
-
 def laporan_permintaan(waktu, toko_id=None):
-    """Satu baris per permintaan. Fill rate dihitung dengan aturan yang sama dengan dashboard:
-    hanya permintaan yang sudah selesai diproses (Dikirim, Diterima, Ditolak);
-    Ditolak dihitung dikirim 0; Dibatalkan tidak dihitung.
-    """
     filter_ = {"dibuat": waktu}
     if toko_id is not None:
         filter_["toko_id"] = toko_id
@@ -118,10 +95,7 @@ def laporan_permintaan(waktu, toko_id=None):
     }
 
 
-# ---------------------------------------------------------------- mutasi stok
-
 def laporan_mutasi(waktu):
-    """Semua perubahan stok fisik dalam periode (Masuk, Keluar, Penyesuaian)."""
     baris = []
     total = {"MASUK": 0, "KELUAR": 0, "ADJUST": 0}
     for m in get_db().mutasi_stok.find({"waktu": waktu}).sort("waktu", -1):
@@ -148,10 +122,7 @@ def laporan_mutasi(waktu):
     }
 
 
-# ---------------------------------------------------------------- barang masuk
-
 def laporan_barang_masuk(waktu):
-    """Satu baris per produk yang diterima, supaya mudah dijumlahkan di Excel."""
     baris = []
     jumlah_dokumen = 0
     supplier = set()
@@ -183,10 +154,7 @@ def laporan_barang_masuk(waktu):
     }
 
 
-# ---------------------------------------------------------------- saran restock
-
 def laporan_restock():
-    """Isi tabel saran restock di dashboard, dalam bentuk laporan yang bisa diunduh."""
     data = insight.dashboard()
     produk = data["produk"]
     perlu = [p for p in produk if p["status"] in ("KRITIS", "PERLU_RESTOCK")]

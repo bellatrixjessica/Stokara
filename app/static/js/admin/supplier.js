@@ -1,9 +1,3 @@
-/* =====================================================================
- * Master Supplier (Admin): daftar, tambah, ubah, aktif/nonaktif.
- * API: GET/POST /api/master/supplier, PUT /api/master/supplier/<id>,
- *      POST /api/master/supplier/<id>/status
- * ===================================================================== */
-
 webix.ready(function () {
   const tabel = {
     view: "datatable",
@@ -31,7 +25,7 @@ webix.ready(function () {
 
   const toolbar = [
     { view: "search", id: "cari", placeholder: "Cari kode atau nama supplier...", maxWidth: 320, on: { onTimedKeyPress: saring } },
-    LAYAR_KECIL ? { width: 8 } : {}, // jarak antara kotak cari dan tombol
+    LAYAR_KECIL ? { width: 8 } : {},
     { view: "button", value: LAYAR_KECIL ? "Tambah" : "Tambah Supplier", css: "webix_primary", width: LAYAR_KECIL ? 90 : 150, click: () => bukaForm(null) },
   ];
 

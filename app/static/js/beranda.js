@@ -1,11 +1,6 @@
-/* =====================================================================
- * Beranda: kartu sambutan + kartu menu sesuai role.
- * ===================================================================== */
-
 webix.ready(function () {
   const p = DATA.pengguna;
 
-  // Kartu sambutan (ungu)
   let info = '<span class="sambutan-badge">' + aman(p.label_role) + "</span>";
   info += '<span class="sambutan-info">' + aman(p.toko || DATA.branch) + "</span>";
 
@@ -23,19 +18,17 @@ webix.ready(function () {
       (LAYAR_KECIL ? "" : '<img src="/static/img/logo-stokara.svg" width="64" height="64" alt="">'),
   };
 
-  // Kartu menu: semua menu kecuali Beranda
   const kartuMenu = {
     view: "dataview",
     id: "kartuMenu",
     css: "kartu-menu",
     borderless: true,
     select: false,
-    scroll: "auto", // scrollbar hanya muncul kalau kartunya tidak muat
-    xCount: LAYAR_KECIL ? 1 : 3, // jumlah kartu per baris
-    type: { width: "auto", height: 116 }, // "auto" = lebar kartu menyesuaikan layar
+    scroll: "auto",
+    xCount: LAYAR_KECIL ? 1 : 3,
+    type: { width: "auto", height: 116 },
     data: DATA.menu.filter((m) => m.id !== "beranda"),
     template: function (m) {
-      // Label kecil di pojok kanan atas, contoh "2 menunggu persetujuan"
       let label = "";
       for (const b of m.label || []) {
         label += '<span class="badge ' + b.warna + '">' + aman(b.teks) + "</span>";
@@ -67,7 +60,6 @@ webix.ready(function () {
   muatLabel();
 });
 
-// Ambil angka "perlu ditindaklanjuti" lalu tempel ke kartu menu yang sesuai
 async function muatLabel() {
   const data = await api("GET", "/api/beranda");
   if (!data) return;

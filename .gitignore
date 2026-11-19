@@ -1,18 +1,6 @@
-# Rahasia (password database, secret key)
 .env
-
-# Virtual environment
+.env.local
 venv/
-
-# File sementara Python
 __pycache__/
 .pytest_cache/
-
-# Deploy
 .vercel/
-
-# Pengaturan Claude Code lokal (bukan bagian aplikasi)
-.claude/
-
-# Token Vercel CLI (dibuat otomatis oleh vercel link)
-.env.local

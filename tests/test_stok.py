@@ -1,4 +1,3 @@
-"""Test model stok: tambah, kurangi, sesuaikan, dan stok tersedia."""
 import pytest
 
 from app.db import get_db
@@ -41,8 +40,8 @@ def test_stok_tidak_bisa_minus(app, produk):
         with pytest.raises(ValidasiError):
             model_stok.kurangi_stok(produk["minyak"], 6, "PRM-1", "-", staff())
 
-        assert stok_fisik(produk["minyak"]) == 5                       # tidak berubah
-        assert get_db().mutasi_stok.count_documents({"jenis": "KELUAR"}) == 0  # tidak tercatat
+        assert stok_fisik(produk["minyak"]) == 5
+        assert get_db().mutasi_stok.count_documents({"jenis": "KELUAR"}) == 0
 
 
 def test_koreksi_stok_mencatat_selisih(app, produk):
@@ -67,8 +66,6 @@ def test_koreksi_stok_tidak_boleh_membuat_minus(app, produk):
 def test_stok_tersedia_dikurangi_qty_disetujui(app, produk):
     with app.app_context():
         model_stok.tambah_stok(produk["minyak"], 100, "BM-1", "-", staff())
-        # Permintaan yang sudah DISETUJUI tapi belum dikirim mengurangi stok tersedia.
-        # Permintaan DIAJUKAN belum mengurangi apa-apa.
         get_db().permintaan.insert_many([
             {"status": "DISETUJUI", "items": [{"produk_id": produk["minyak"], "qty_disetujui": 30}]},
             {"status": "DISETUJUI", "items": [{"produk_id": produk["minyak"], "qty_disetujui": 20}]},

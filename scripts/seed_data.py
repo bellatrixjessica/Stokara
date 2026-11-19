@@ -1,14 +1,3 @@
-"""Membuat data contoh 30 hari: supplier, produk, barang masuk, permintaan toko, dan opname.
-
-Jalankan dari folder D:\\Stokara (setelah seed_akun.py):
-    python scripts/seed_data.py            -> isi data contoh (hanya jika belum ada transaksi)
-    python scripts/seed_data.py --reset    -> hapus semua transaksi lalu isi ulang (ada konfirmasi)
-
-Data dibuat langsung ke database, tetapi mengikuti aturan bisnis yang sama dengan aplikasi:
-- qty disetujui <= stok tersedia, tidak ada pengiriman sebagian, stok tidak pernah minus
-- setiap perubahan stok tercatat di mutasi_stok (MASUK, KELUAR, ADJUST)
-- angka acak memakai random.seed tetap, jadi hasilnya selalu sama setiap dijalankan
-"""
 import os
 import random
 import sys
@@ -16,7 +5,7 @@ from datetime import datetime, timedelta, timezone
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from app.utils.waktu import WIB  # noqa: E402
+from app.utils.waktu import WIB
 
 SUPPLIER = [
     ("SUP-01", "PT Sumber Pangan Jaya", "024-7601234", "Jl. Industri Raya 3, Semarang"),
@@ -25,13 +14,12 @@ SUPPLIER = [
     ("SUP-04", "PT Bersih Sentosa", "024-8442210", "Jl. Majapahit 120, Semarang"),
 ]
 
-# kode, nama, kategori, satuan, supplier, lead time, (qty min, qty max per permintaan), stok awal, restock
 PRODUK = [
     ("P-0001", "Minyak Goreng 1L", "Sembako", "PCS", "SUP-01", 2, (14, 34), 220, 150),
     ("P-0002", "Beras Premium 5kg", "Sembako", "PCS", "SUP-01", 3, (10, 26), 170, 115),
     ("P-0003", "Gula Pasir 1kg", "Sembako", "PCS", "SUP-02", 2, (12, 28), 190, 125),
-    ("P-0004", "Mi Instan Goreng 85g", "Makanan", "KARTON", "SUP-01", 3, (12, 30), 150, 40),   # -> Perlu restock
-    ("P-0005", "Air Mineral 600ml", "Minuman", "KARTON", "SUP-03", 2, (16, 40), 70, 30),     # -> Kritis
+    ("P-0004", "Mi Instan Goreng 85g", "Makanan", "KARTON", "SUP-01", 3, (12, 30), 150, 40),
+    ("P-0005", "Air Mineral 600ml", "Minuman", "KARTON", "SUP-03", 2, (16, 40), 70, 30),
     ("P-0006", "Teh Kotak 200ml", "Minuman", "KARTON", "SUP-03", 2, (8, 20), 120, 80),
     ("P-0007", "Susu UHT 1L", "Minuman", "PCS", "SUP-03", 3, (8, 22), 130, 90),
     ("P-0008", "Kopi Sachet", "Minuman", "PACK", "SUP-02", 3, (10, 24), 150, 95),
@@ -41,12 +29,11 @@ PRODUK = [
     ("P-0012", "Roti Tawar", "Makanan", "PCS", "SUP-02", 1, (10, 22), 110, 75),
 ]
 
-HARI_RESTOCK = [22, 15, 8]   # hari ke berapa (dari sekarang) barang masuk mingguan datang
+HARI_RESTOCK = [22, 15, 8]
 KOLEKSI_TRANSAKSI = ["barang_masuk", "permintaan", "mutasi_stok", "opname", "notifikasi"]
 
 
 def pastikan_master(db, sekarang_utc):
-    """Tambahkan supplier dan produk contoh yang belum ada (berdasarkan kode)."""
     for kode, nama, telepon, alamat in SUPPLIER:
         if not db.master_supplier.find_one({"kode": kode}):
             db.master_supplier.insert_one({"kode": kode, "nama": nama, "telepon": telepon, "alamat": alamat,
@@ -60,7 +47,6 @@ def pastikan_master(db, sekarang_utc):
 
 
 def buat_data_contoh(db, sekarang_utc=None):
-    """Isi transaksi 30 hari. Mengembalikan ringkasan jumlah dokumen yang dibuat."""
     acak = random.Random(2026)
     sekarang_utc = sekarang_utc or datetime.now(timezone.utc)
     hari_ini = sekarang_utc.astimezone(WIB).date()
@@ -82,9 +68,7 @@ def buat_data_contoh(db, sekarang_utc=None):
     nomor_terakhir = {}
     dokumen = {nama: [] for nama in ["barang_masuk", "permintaan", "mutasi_stok", "opname"]}
 
-    # ---------------------------------------------------------- bantuan
     def waktu(hari_lalu, jam, menit=0):
-        """Waktu WIB pada hari tertentu, diubah ke UTC. Tidak pernah melewati waktu sekarang."""
         tanggal = hari_ini - timedelta(days=hari_lalu)
         hasil = datetime(tanggal.year, tanggal.month, tanggal.day, jam, menit, tzinfo=WIB).astimezone(timezone.utc)
         batas = sekarang_utc - timedelta(minutes=1)
@@ -109,7 +93,6 @@ def buat_data_contoh(db, sekarang_utc=None):
         })
 
     def barang_masuk(hari_lalu, daftar_qty):
-        """daftar_qty: {kode: qty}. Satu dokumen per supplier."""
         per_supplier = {}
         for kode, qty in daftar_qty.items():
             if qty > 0:
@@ -129,16 +112,15 @@ def buat_data_contoh(db, sekarang_utc=None):
             for kode, qty in isi:
                 mutasi(kode, "MASUK", qty, no, "Barang masuk dari " + supplier["nama"], staff, saat)
 
-    # ---------------------------------------------------------- simulasi per hari
-    barang_masuk(29, {x[0]: x[7] for x in PRODUK})            # stok awal
-    dipesan = {kode: 0 for kode in produk}                     # qty DISETUJUI belum dikirim
+    barang_masuk(29, {x[0]: x[7] for x in PRODUK})
+    dipesan = {kode: 0 for kode in produk}
     jumlah_hari_ini = 0
 
     for hari_lalu in range(28, -1, -1):
         if hari_lalu in HARI_RESTOCK:
             barang_masuk(hari_lalu, {x[0]: x[8] for x in PRODUK})
 
-        if hari_lalu == 12:  # stock opname: ada barang rusak/hilang
+        if hari_lalu == 12:
             saat = waktu(12, 16)
             hitung = {"P-0001": -2, "P-0009": -1, "P-0003": 0}
             items = []
@@ -159,7 +141,7 @@ def buat_data_contoh(db, sekarang_utc=None):
 
         for urutan, (toko, kepala_toko) in enumerate(toko_daftar):
             if acak.random() > 0.7:
-                continue  # toko ini tidak meminta hari ini
+                continue
             dibuat = waktu(hari_lalu, 8 + urutan, acak.randint(0, 50))
             kode_dipilih = acak.sample(sorted(produk), acak.randint(2, 4))
             items = []
@@ -186,13 +168,12 @@ def buat_data_contoh(db, sekarang_utc=None):
             if hari_lalu == 0:
                 jumlah_hari_ini += 1
                 if jumlah_hari_ini == 1:
-                    continue  # permintaan pertama hari ini dibiarkan DIAJUKAN (menunggu persetujuan)
+                    continue
 
             if acak.random() < 0.06:
                 ubah("DIBATALKAN", kepala_toko, 1)
                 continue
 
-            # Persetujuan: qty disetujui = terkecil antara diminta dan stok tersedia
             for item in items:
                 tersedia = stok[item["kode"]] - dipesan[item["kode"]]
                 item["qty_disetujui"] = max(0, min(item["qty_diminta"], tersedia))
@@ -207,11 +188,10 @@ def buat_data_contoh(db, sekarang_utc=None):
             ubah("DISETUJUI", kepala_gudang, 1)
 
             if hari_lalu == 0 and jumlah_hari_ini == 2:
-                for item in items:   # permintaan kedua hari ini menunggu dikirim
+                for item in items:
                     dipesan[item["kode"]] += item["qty_disetujui"]
                 continue
 
-            # Pengiriman: qty dikirim = qty disetujui (tidak ada pengiriman sebagian)
             saat_kirim = ubah("DIKIRIM", staff, 2)
             for item in items:
                 item["qty_dikirim"] = item["qty_disetujui"]
@@ -221,7 +201,6 @@ def buat_data_contoh(db, sekarang_utc=None):
             if hari_lalu >= 2:
                 ubah("DITERIMA", kepala_toko, 26)
 
-    # ---------------------------------------------------------- simpan ke database
     for nama, isi in dokumen.items():
         if isi:
             db[nama].insert_many(isi)

@@ -1,4 +1,3 @@
-"""Dashboard insight (Kepala Gudang) dan angka di kartu beranda (semua role)."""
 from flask import Blueprint, g, jsonify
 
 from app.models import beranda, insight

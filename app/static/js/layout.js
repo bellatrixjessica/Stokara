@@ -1,16 +1,3 @@
-/* =====================================================================
- * Kerangka halaman setelah login: header di atas, sidebar di kiri, isi di kanan.
- *
- * DATA dikirim dari Flask lewat halaman.html:
- *   DATA.pengguna  -> { nama, label_role, toko }
- *   DATA.menu      -> daftar menu sesuai role
- *   DATA.aktif     -> id menu yang sedang dibuka
- *   DATA.branch    -> "Branch Semarang"
- *
- * Setiap file halaman (misalnya beranda.js) cukup memanggil:
- *   tampilkanHalaman({ rows: [ ...komponen isi halaman... ] });
- * ===================================================================== */
-
 function tampilkanHalaman(isi) {
   webix.ui({
     rows: [
@@ -50,7 +37,6 @@ function buatHeader() {
       { view: "icon", icon: "mdi mdi-menu", tooltip: "Buka/tutup menu", click: () => $$("menu").toggle() },
       { view: "template", css: "app-brand", borderless: true, width: LAYAR_KECIL ? 120 : 280, template: brand },
       {},
-      // Lonceng notifikasi. "badge" = angka kecil jumlah yang belum dibaca.
       { view: "icon", id: "lonceng", css: "app-lonceng", icon: "mdi mdi-bell-outline", tooltip: "Notifikasi", popup: "popupNotif" },
       { view: "template", css: "app-akun", borderless: true, width: LAYAR_KECIL ? 44 : 270, template: akun },
       LAYAR_KECIL
@@ -66,7 +52,7 @@ function buatSidebar() {
     id: "menu",
     css: "app-sidebar",
     width: 220,
-    collapsed: LAYAR_KECIL, // di ponsel hanya ikon
+    collapsed: LAYAR_KECIL,
     data: DATA.menu.map((m) => ({ id: m.id, value: m.judul, icon: m.ikon, url: m.url })),
     on: {
       onItemClick: function (id) {
@@ -74,15 +60,11 @@ function buatSidebar() {
       },
     },
     ready: function () {
-      this.select(DATA.aktif); // sorot menu halaman ini
+      this.select(DATA.aktif);
     },
   };
 }
 
-/**
- * Judul dan keterangan di bagian atas isi halaman.
- * Contoh: judulHalaman("Stok Gudang", "Stok fisik dan stok tersedia.")
- */
 function judulHalaman(judul, keterangan) {
   return {
     view: "template",
@@ -93,10 +75,6 @@ function judulHalaman(judul, keterangan) {
   };
 }
 
-/**
- * Kotak putih berisi toolbar + tabel. Dipakai di halaman-halaman daftar.
- * Contoh: kartuTabel([ ...isi toolbar... ], { view: "datatable", ... })
- */
 function kartuTabel(isiToolbar, tabel) {
   return {
     css: "kartu-tabel",
@@ -107,10 +85,6 @@ function kartuTabel(isiToolbar, tabel) {
   };
 }
 
-/**
- * Jendela (popup) berisi form. Di ponsel tampil layar penuh.
- * Contoh: buatJendela("jendela", "Tambah Toko", [ ...elemen form... ], simpan)
- */
 function buatJendela(id, judul, elemen, saatSimpan, lebar) {
   webix.ui({
     view: "window",
@@ -149,9 +123,6 @@ function buatJendela(id, judul, elemen, saatSimpan, lebar) {
   });
 }
 
-// ---------------------------------------------------------------------
-// Notifikasi (lonceng di header)
-// ---------------------------------------------------------------------
 
 function buatPopupNotifikasi() {
   webix.ui({
@@ -176,7 +147,7 @@ function buatPopupNotifikasi() {
           maxHeight: 380,
           scroll: "y",
           select: false,
-          type: { height: 84 }, // tinggi tetap per notifikasi supaya autoheight bisa dihitung
+          type: { height: 84 },
           template: function (n) {
             if (n.kosong) {
               return '<div class="notif-kosong">Belum ada notifikasi.</div>';
@@ -207,7 +178,7 @@ async function muatNotifikasi() {
   if (!data) return;
 
   const lonceng = $$("lonceng");
-  lonceng.config.badge = data.belum_dibaca > 0 ? data.belum_dibaca : ""; // kosong = badge disembunyikan
+  lonceng.config.badge = data.belum_dibaca > 0 ? data.belum_dibaca : "";
   lonceng.refresh();
 
   const daftar = $$("daftarNotif");

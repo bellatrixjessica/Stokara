@@ -1,4 +1,3 @@
-"""Master Supplier (khusus Admin)."""
 from flask import Blueprint, abort, jsonify
 
 from app.models import supplier as model_supplier

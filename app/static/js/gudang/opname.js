@@ -1,11 +1,3 @@
-/* =====================================================================
- * Stock Opname (Kepala Gudang & Staff Gudang)
- * - Staff Gudang  : isi hasil hitung fisik per produk
- * - Kepala Gudang : periksa selisih, lalu setujui (stok dikoreksi) atau tolak
- * API: GET/POST /api/opname, GET /api/opname/produk,
- *      POST /api/opname/<id>/setujui, POST /api/opname/<id>/tolak
- * ===================================================================== */
-
 const KEPALA_GUDANG = DATA.pengguna.role === "kepala_gudang";
 let opnameAktif = null;
 
@@ -63,7 +55,7 @@ webix.ready(function () {
   if (!KEPALA_GUDANG) buatForm();
 
   muatData().then(() => {
-    const nomor = new URLSearchParams(window.location.search).get("nomor"); // dari klik notifikasi
+    const nomor = new URLSearchParams(window.location.search).get("nomor");
     if (nomor) {
       const o = $$("tabel").find((x) => x.nomor === nomor, true);
       if (o) bukaDetail(o);
@@ -84,13 +76,11 @@ function saring() {
   $$("tabel").filter((o) => o.nomor.toLowerCase().includes(kata));
 }
 
-// Selisih: hijau kalau lebih, merah kalau kurang, abu-abu kalau sama
 function kolomSelisih(i) {
   if (i.selisih === "" || i.selisih === undefined) return "";
   return i.selisih === 0 ? '<span class="kecil" style="display:inline">sesuai</span>' : perubahan(i.selisih);
 }
 
-// ---------- Jendela detail (periksa) ----------
 
 function buatJendelaDetail() {
   webix.ui({
@@ -200,7 +190,6 @@ function selesai(hasil) {
   muatNotifikasi();
 }
 
-// ---------- Form hitung (Staff Gudang) ----------
 
 function buatForm() {
   buatJendela("jendelaHitung", "Mulai Opname", [
@@ -249,7 +238,7 @@ async function simpanHitung() {
 
   const items = [];
   for (const p of tabel.serialize()) {
-    if (p.hitung === "" || p.hitung === undefined) continue; // tidak dihitung
+    if (p.hitung === "" || p.hitung === undefined) continue;
     const qty = Number(p.hitung);
     if (!Number.isInteger(qty) || qty < 0) {
       webix.message({ type: "error", text: aman(p.nama + ": hasil hitung harus angka bulat 0 atau lebih.") });

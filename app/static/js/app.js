@@ -1,11 +1,5 @@
-/* =====================================================================
- * Fungsi bantu yang dipakai semua halaman Stokara.
- * ===================================================================== */
-
-// Ponsel atau layar sempit (dicek sekali saat halaman dibuka).
 const LAYAR_KECIL = window.innerWidth < 768;
 
-// Bahasa Indonesia untuk kalender Webix dan nomor halaman di PDF unduhan.
 Object.assign(webix.i18n.calendar, {
   monthFull: ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"],
   monthShort: ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"],
@@ -18,15 +12,6 @@ webix.i18n.dataExport.page = "Halaman";
 webix.i18n.dataExport.of = "dari";
 webix.i18n.setLocale();
 
-/**
- * Kirim atau ambil data JSON dari server.
- * Contoh: const saya = await api("GET", "/api/saya");
- *         const hasil = await api("POST", "/api/master/toko", { kode: "TK-04", ... });
- *
- * Berhasil -> mengembalikan data dari server.
- * Gagal    -> pesan error dari server ditampilkan, lalu mengembalikan null.
- *             Jadi di halaman cukup dicek:  if (!hasil) return;
- */
 async function api(metode, url, data) {
   const opsi = { method: metode, headers: { "Content-Type": "application/json" } };
   if (data !== undefined) {
@@ -43,7 +28,7 @@ async function api(metode, url, data) {
   const hasil = await respon.json().catch(() => ({}));
 
   if (respon.status === 401 && url !== "/api/login") {
-    window.location.href = "/login"; // session habis, login ulang
+    window.location.href = "/login";
     return null;
   }
   if (!respon.ok) {
@@ -53,23 +38,14 @@ async function api(metode, url, data) {
   return hasil;
 }
 
-/**
- * Ubah teks menjadi aman untuk ditampilkan di HTML.
- * Contoh: nama "<script>" ditampilkan sebagai teks biasa, bukan dijalankan (mencegah XSS).
- */
 function aman(teks) {
   return webix.template.escape(teks === null || teks === undefined ? "" : String(teks));
 }
 
-// Pesan hijau di pojok kanan atas, contoh: "Toko berhasil ditambahkan."
 function berhasil(pesan) {
   webix.message({ type: "success", text: aman(pesan) });
 }
 
-/**
- * Dialog konfirmasi "Ya / Batal".
- * Contoh: if (!(await konfirmasi("Nonaktifkan toko?", "Toko tidak bisa ..."))) return;
- */
 function konfirmasi(judul, teks) {
   return webix
     .confirm({ title: aman(judul), text: aman(teks), ok: "Ya", cancel: "Batal", width: 380 })
@@ -77,10 +53,6 @@ function konfirmasi(judul, teks) {
     .catch(() => false);
 }
 
-/**
- * Dialog yang meminta pengguna mengetik teks, contoh alasan penolakan.
- * Mengembalikan teks yang diketik, atau null kalau pengguna menekan Batal.
- */
 function mintaTeks(judul, teks, contoh) {
   return webix
     .prompt({
@@ -91,32 +63,24 @@ function mintaTeks(judul, teks, contoh) {
     .catch(() => null);
 }
 
-// Label status Aktif (hijau) / Nonaktif (abu-abu), dipakai di kolom tabel.
 function badgeStatus(baris) {
   return baris.aktif
     ? '<span class="badge b-hijau">Aktif</span>'
     : '<span class="badge b-abu">Nonaktif</span>';
 }
 
-// Format angka Indonesia: 1558 -> "1.558"
 function angka(n) {
   return Number(n).toLocaleString("id-ID");
 }
 
-// Angka dengan satu desimal: 15.6 -> "15,6"
 function desimal(n) {
   return Number(n).toLocaleString("id-ID", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
 }
 
-// Format Rupiah: 15000 -> "Rp 15.000"
 function rupiah(n) {
   return "Rp " + angka(n);
 }
 
-/**
- * Waktu dari server (UTC) ditampilkan dalam WIB.
- * "2026-11-19T02:15:00+00:00" -> "19 Nov 2026 09.15"
- */
 function tanggalWaktu(iso) {
   if (!iso) return "–";
   return new Date(iso).toLocaleString("id-ID", {
@@ -129,13 +93,11 @@ function tanggalWaktu(iso) {
   });
 }
 
-// Tanggal saja (WIB): "2026-11-19T02:15:00+00:00" -> "19 Nov 2026"
 function tanggal(iso) {
   if (!iso) return "–";
   return new Date(iso).toLocaleDateString("id-ID", { timeZone: "Asia/Jakarta", day: "numeric", month: "short", year: "numeric" });
 }
 
-// Angka perubahan stok dengan tanda: 40 -> "+40", -5 -> "−5"
 function perubahan(n) {
   if (n > 0) return '<span class="naik">+' + angka(n) + "</span>";
   if (n < 0) return '<span class="turun">−' + angka(-n) + "</span>";

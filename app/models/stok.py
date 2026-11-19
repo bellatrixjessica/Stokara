@@ -1,28 +1,3 @@
-"""Model stok: perubahan stok dan riwayatnya (collection mutasi_stok).
-
-Tiga angka stok:
-- Stok fisik    : barang yang benar-benar ada di gudang (field "stok" di master_produk).
-- Stok dipesan  : qty yang sudah DISETUJUI untuk toko tapi belum dikirim.
-- Stok tersedia : fisik - dipesan. Inilah yang boleh disetujui untuk permintaan baru.
-
-Stok fisik HANYA berubah lewat tiga fungsi di file ini, dan setiap perubahan
-dicatat di mutasi_stok:
-- tambah_stok()    -> MASUK  (barang masuk dari supplier)
-- kurangi_stok()   -> KELUAR (pengiriman ke toko)
-- koreksi_stok()   -> ADJUST (selisih hasil stock opname)
-
-Bentuk dokumen mutasi_stok:
-{
-    "produk_id": ObjectId, "kode": "P-0001", "nama": "Minyak Goreng 1L",
-    "jenis": "MASUK",            <- MASUK / KELUAR / ADJUST
-    "perubahan": 40,             <- positif = bertambah, negatif = berkurang
-    "stok_sebelum": 51, "stok_sesudah": 91,
-    "referensi": "BM-261119-0001",
-    "keterangan": "Barang masuk dari PT Sumber Pangan Jaya",
-    "oleh": {"id": ObjectId, "nama": "Staff Gudang Semarang"},
-    "waktu": datetime (UTC)
-}
-"""
 import re
 
 from pymongo import ReturnDocument
@@ -49,19 +24,15 @@ def catat_mutasi(produk, jenis, perubahan, stok_sesudah, referensi, keterangan, 
 
 
 def tambah_stok(produk_id, qty, referensi, keterangan, user):
-    # $inc menambah langsung di database dalam satu langkah.
     produk = get_db().master_produk.find_one_and_update(
         {"_id": produk_id},
         {"$inc": {"stok": qty}},
-        return_document=ReturnDocument.AFTER,  # kembalikan data SESUDAH ditambah
+        return_document=ReturnDocument.AFTER,
     )
     catat_mutasi(produk, "MASUK", qty, produk["stok"], referensi, keterangan, user)
 
 
 def kurangi_stok(produk_id, qty, referensi, keterangan, user):
-    # Syarat "stok >= qty" dan pengurangannya dikerjakan database dalam SATU langkah.
-    # Kalau stok kurang, dokumen tidak cocok dengan syarat -> tidak ada yang dikurangi.
-    # Jadi stok tidak akan pernah minus, walaupun dua orang mengirim bersamaan.
     produk = get_db().master_produk.find_one_and_update(
         {"_id": produk_id, "stok": {"$gte": qty}},
         {"$inc": {"stok": -qty}},
@@ -73,14 +44,9 @@ def kurangi_stok(produk_id, qty, referensi, keterangan, user):
 
 
 def koreksi_stok(produk_id, selisih, referensi, keterangan, user):
-    """Tambah atau kurangi stok sebesar selisih hasil opname (bisa positif atau negatif).
-
-    Yang dikoreksi adalah SELISIHNYA, bukan menimpa stok dengan angka hitungan.
-    Jadi barang yang masuk atau keluar setelah dihitung tetap terhitung.
-    """
     syarat = {"_id": produk_id}
     if selisih < 0:
-        syarat["stok"] = {"$gte": -selisih}  # sama seperti kurangi_stok: tidak boleh minus
+        syarat["stok"] = {"$gte": -selisih}
 
     produk = get_db().master_produk.find_one_and_update(
         syarat, {"$inc": {"stok": selisih}}, return_document=ReturnDocument.AFTER
@@ -91,7 +57,6 @@ def koreksi_stok(produk_id, selisih, referensi, keterangan, user):
 
 
 def qty_dipesan():
-    """Total qty DISETUJUI yang belum dikirim, per produk. Hasil: {produk_id: qty}"""
     hasil = {}
     for permintaan in get_db().permintaan.find({"status": "DISETUJUI"}):
         for item in permintaan["items"]:
@@ -106,18 +71,12 @@ def stok_tersedia(produk_id):
 
 
 def filter_cari(cari):
-    """Filter pencarian produk.
-
-    - Ada angkanya (contoh "P-0001", "0004") -> cari awalan kode (memakai unique index kode)
-    - Kata biasa (contoh "minyak", "sembako") -> cari di nama & kategori memakai TEXT INDEX
-    """
     if any(huruf.isdigit() for huruf in cari):
         return {"kode": {"$regex": "^" + re.escape(cari.upper())}}
     return {"$text": {"$search": cari}}
 
 
 def daftar_stok(cari=None):
-    """Produk aktif dengan stok fisik, dipesan, dan tersedia. cari = kata kunci (opsional)."""
     filter_ = {"aktif": True}
     if cari:
         filter_.update(filter_cari(cari))
@@ -140,5 +99,4 @@ def daftar_stok(cari=None):
 
 
 def riwayat(produk_id, batas=100):
-    """Mutasi terbaru satu produk (paling baru di atas)."""
     return list(get_db().mutasi_stok.find({"produk_id": produk_id}).sort("waktu", -1).limit(batas))

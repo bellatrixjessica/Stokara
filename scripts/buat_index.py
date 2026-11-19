@@ -1,20 +1,13 @@
-"""Membuat index MongoDB, lalu membuktikan index benar-benar dipakai.
-
-Jalankan dari folder D:\\Stokara:
-    python scripts/buat_index.py           -> buat index
-    python scripts/buat_index.py --cek     -> buat index + tampilkan hasil explain()
-"""
 import os
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from app import create_app  # noqa: E402
-from app.models import indeks  # noqa: E402
+from app import create_app
+from app.models import indeks
 
 
 def cari_tahap(rencana, hasil=None):
-    """Kumpulkan nama tahap (IXSCAN, COLLSCAN, TEXT_MATCH, ...) dan nama index dari rencana query."""
     if hasil is None:
         hasil = []
     if isinstance(rencana, dict):

@@ -1,10 +1,3 @@
-/* =====================================================================
- * Master Produk (Admin): daftar, tambah, ubah, aktif/nonaktif.
- * API: GET/POST /api/master/produk, PUT /api/master/produk/<id>,
- *      POST /api/master/produk/<id>/status
- * DATA.satuan dikirim dari Flask: ["PCS", "PACK", "KARTON", "BOX", "LUSIN"]
- * ===================================================================== */
-
 webix.ready(function () {
   const tabel = {
     view: "datatable",
@@ -34,7 +27,7 @@ webix.ready(function () {
 
   const toolbar = [
     { view: "search", id: "cari", placeholder: "Cari kode, nama, atau kategori...", maxWidth: 320, on: { onTimedKeyPress: saring } },
-    LAYAR_KECIL ? { width: 8 } : {}, // jarak antara kotak cari dan tombol
+    LAYAR_KECIL ? { width: 8 } : {},
     { view: "button", value: LAYAR_KECIL ? "Tambah" : "Tambah Produk", css: "webix_primary", width: LAYAR_KECIL ? 90 : 140, click: () => bukaForm(null) },
   ];
 
@@ -89,7 +82,6 @@ async function muatData() {
   saring();
 }
 
-// Pilihan supplier di form: hanya supplier yang aktif
 async function muatSupplier() {
   const data = await api("GET", "/api/master/supplier");
   if (!data) return;

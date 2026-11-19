@@ -1,7 +1,3 @@
-"""Barang masuk dari supplier.
-
-Staff Gudang mencatat, Kepala Gudang hanya melihat.
-"""
 from flask import Blueprint, g, jsonify
 
 from app.models import barang_masuk as model_bm

@@ -1,4 +1,3 @@
-"""Bantuan untuk menampilkan halaman: menu per role dan halaman error."""
 from flask import current_app, g, jsonify, render_template, request
 
 from app.models import user as model_user
@@ -6,8 +5,6 @@ from app.models.user import ADMIN, KEPALA_GUDANG, KEPALA_TOKO, STAFF_GUDANG
 
 SEMUA = [ADMIN, KEPALA_GUDANG, STAFF_GUDANG, KEPALA_TOKO]
 
-# Daftar menu. "role" = siapa saja yang melihat menu ini.
-# Ikon dari Material Design Icons: https://pictogrammers.com/library/mdi/
 MENU = [
     {"id": "beranda", "judul": "Beranda", "ikon": "mdi mdi-home-outline", "url": "/beranda",
      "keterangan": "Ringkasan pekerjaan Anda", "role": SEMUA},
@@ -37,7 +34,6 @@ MENU = [
 
 
 def menu_untuk(role):
-    """Ambil menu yang boleh dilihat role tertentu (tanpa kolom "role")."""
     hasil = []
     for item in MENU:
         if role in item["role"]:
@@ -46,14 +42,6 @@ def menu_untuk(role):
 
 
 def render_halaman(js, judul, aktif, tambahan=None):
-    """Tampilkan halaman setelah login.
-
-    js       : file JavaScript Webix halaman ini, contoh "beranda.js",
-               atau daftar file, contoh ["permintaan_bersama.js", "toko/permintaan.js"]
-    judul    : judul di tab browser
-    aktif    : id menu yang disorot di sidebar
-    tambahan : data lain untuk halaman ini, contoh {"satuan": ["PCS", "KARTON"]}
-    """
     data = {
         "pengguna": model_user.data_publik(g.user),
         "menu": menu_untuk(g.user["role"]),
@@ -68,7 +56,6 @@ def render_halaman(js, judul, aktif, tambahan=None):
 
 
 def halaman_error(kode, judul, pesan):
-    """API mendapat JSON, halaman biasa mendapat halaman error yang rapi."""
     if request.path.startswith("/api/"):
         return jsonify(pesan=pesan), kode
     return render_template("error.html", kode=kode, judul=judul, pesan=pesan), kode

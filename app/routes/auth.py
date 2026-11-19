@@ -1,4 +1,3 @@
-"""Login, logout, dan data pengguna yang sedang login."""
 from flask import Blueprint, g, jsonify, session
 
 from app.models import user as model_user
@@ -19,13 +18,11 @@ def login():
 
     user = model_user.cek_login(username, password)
     if user is None:
-        # Pesan sama untuk username salah atau password salah,
-        # supaya orang lain tidak bisa menebak username mana yang terdaftar.
         return jsonify(pesan="Username atau password salah."), 401
 
     session.clear()
     session["user_id"] = str(user["_id"])
-    session.permanent = True  # session berlaku 8 jam (lihat config.py)
+    session.permanent = True
     return jsonify(pesan="Login berhasil.", redirect="/beranda")
 
 

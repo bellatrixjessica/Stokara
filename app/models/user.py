@@ -1,16 +1,3 @@
-"""Model user: akun login, password, dan role.
-
-Bentuk dokumen di collection "users":
-{
-    "username": "kepala.gudang",
-    "password_hash": "scrypt:32768:8:1$...",   <- bukan password asli
-    "nama": "Kepala Gudang Semarang",
-    "role": "kepala_gudang",
-    "toko_id": None,          <- hanya diisi untuk Kepala Toko
-    "aktif": True,
-    "dibuat": datetime
-}
-"""
 from datetime import datetime, timezone
 
 from bson import ObjectId
@@ -20,7 +7,6 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from app.db import get_db
 from app.utils.validasi import ValidasiError
 
-# Empat role di Stokara
 ADMIN = "admin"
 KEPALA_GUDANG = "kepala_gudang"
 STAFF_GUDANG = "staff_gudang"
@@ -42,11 +28,10 @@ def cari_berdasarkan_id(user_id):
     try:
         return get_db().users.find_one({"_id": ObjectId(user_id)})
     except (InvalidId, TypeError):
-        return None  # id rusak atau kosong dianggap tidak ditemukan
+        return None
 
 
 def cek_role_dan_toko(role, toko_id):
-    """Kepala Toko wajib punya toko yang aktif. Role lain tidak punya toko."""
     if role not in LABEL_ROLE:
         raise ValidasiError("Role tidak dikenal.")
     if role != KEPALA_TOKO:
@@ -58,7 +43,6 @@ def cek_role_dan_toko(role, toko_id):
 
 
 def buat_user(username, password, nama, role, toko_id=None):
-    """Menyimpan user baru. Password di-hash dulu, yang asli tidak disimpan."""
     toko_id = cek_role_dan_toko(role, toko_id)
     if cari_berdasarkan_username(username):
         raise ValidasiError(f"Username '{username}' sudah dipakai.")
@@ -77,7 +61,6 @@ def buat_user(username, password, nama, role, toko_id=None):
 
 
 def cek_login(username, password):
-    """Kembalikan data user jika username dan password benar, selain itu None."""
     user = cari_berdasarkan_username(username)
     if user is None or not user["aktif"]:
         return None
@@ -87,7 +70,6 @@ def cek_login(username, password):
 
 
 def semua_karyawan():
-    """Daftar semua akun untuk halaman Karyawan, ditambah nama toko dan label role."""
     nama_toko = {}
     for t in get_db().master_toko.find():
         nama_toko[t["_id"]] = t["nama"]
@@ -120,7 +102,6 @@ def ganti_password(user_id, password_baru):
 
 
 def data_publik(user):
-    """Data user yang aman dikirim ke browser (tanpa password_hash)."""
     nama_toko = None
     if user["toko_id"]:
         toko = get_db().master_toko.find_one({"_id": user["toko_id"]})

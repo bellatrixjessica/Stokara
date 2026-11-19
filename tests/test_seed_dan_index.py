@@ -1,4 +1,3 @@
-"""Test data contoh (seed) dan index MongoDB."""
 import pytest
 from pymongo.errors import DuplicateKeyError
 
@@ -12,7 +11,6 @@ from tests.helper import login
 
 @pytest.fixture
 def db_contoh(app):
-    """Database berisi 3 toko (dengan Kepala Toko) dan data contoh 30 hari."""
     with app.app_context():
         db = get_db()
         for kode, nama in [("TK-02", "Toko Ungaran 01"), ("TK-03", "Toko Semarang Tengah 01")]:
@@ -21,8 +19,6 @@ def db_contoh(app):
         seed_data.buat_data_contoh(db)
         yield db
 
-
-# ---------------------------------------------------------------- data contoh
 
 def test_stok_produk_sama_dengan_jumlah_mutasi(db_contoh):
     for produk in db_contoh.master_produk.find():
@@ -54,8 +50,6 @@ def test_nomor_dokumen_tidak_ganda(db_contoh):
     assert len(nomor) == len(set(nomor))
 
 
-# ---------------------------------------------------------------- index
-
 def test_index_unique_menolak_kode_ganda(app):
     with app.app_context():
         db = get_db()
@@ -74,8 +68,6 @@ def test_semua_index_terdaftar(app):
 
 
 def test_cari_stok_berdasarkan_kode(client, produk):
-    # Pencarian kata memakai $text (text index) yang hanya ada di MongoDB asli,
-    # jadi dicek dengan scripts/buat_index.py --cek di Atlas. Di sini yang dites cari kode.
     login(client, "staff.gudang")
     hasil = client.get("/api/stok?cari=p-0002").get_json()
     assert [p["kode"] for p in hasil] == ["P-0002"]

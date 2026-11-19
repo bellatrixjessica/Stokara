@@ -1,4 +1,3 @@
-"""Notifikasi di header (ikon lonceng). Untuk semua role yang sudah login."""
 from flask import Blueprint, g, jsonify
 
 from app.models import notifikasi as model_notifikasi

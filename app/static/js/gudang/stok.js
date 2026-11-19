@@ -1,10 +1,3 @@
-/* =====================================================================
- * Stok Gudang (Kepala Gudang & Staff Gudang)
- * - Tabel stok fisik, dipesan, tersedia
- * - Klik baris -> riwayat mutasi produk tersebut
- * API: GET /api/stok, GET /api/stok/<produk_id>/mutasi
- * ===================================================================== */
-
 webix.ready(function () {
   const tabel = {
     view: "datatable",
@@ -31,7 +24,6 @@ webix.ready(function () {
   };
 
   const toolbar = [
-    // Pencarian dikerjakan server: kode -> awalan kode, kata -> text index MongoDB
     { view: "search", id: "cari", placeholder: "Cari kode, nama, atau kategori...", maxWidth: 320, on: { onTimedKeyPress: muatData } },
     {},
     { view: "button", value: "Muat ulang", css: "tombol-garis", width: 110, hidden: LAYAR_KECIL, click: muatData },
@@ -48,7 +40,6 @@ webix.ready(function () {
   muatData();
 });
 
-// Tersedia 0 ditandai merah supaya cepat terlihat
 function kolomTersedia(p) {
   const teks = angka(p.tersedia);
   return p.tersedia <= 0 ? '<b class="turun">' + teks + "</b>" : "<b>" + teks + "</b>";
@@ -62,7 +53,6 @@ async function muatData() {
   $$("tabel").parse(data);
 }
 
-// ---------- Jendela riwayat mutasi ----------
 
 const LABEL_JENIS = {
   MASUK: '<span class="badge b-hijau">Masuk</span>',

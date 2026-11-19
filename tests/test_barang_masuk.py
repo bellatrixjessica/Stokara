@@ -1,4 +1,3 @@
-"""Test barang masuk dan halaman stok."""
 import re
 
 from app.db import get_db
@@ -67,16 +66,16 @@ def test_validasi_barang_masuk(client, app, produk):
         get_db().master_produk.update_one({"_id": produk["beras"]}, {"$set": {"aktif": False}})
 
     salah = [
-        data_bm(produk, items=[]),                                                  # tanpa produk
-        data_bm(produk, items=[{"produk_id": minyak, "qty": 0}]),                   # qty 0
-        data_bm(produk, items=[{"produk_id": minyak, "qty": "5"}]),                 # qty teks
-        data_bm(produk, items=[{"produk_id": minyak, "qty": 5}, {"produk_id": minyak, "qty": 3}]),  # produk ganda
-        data_bm(produk, items=[{"produk_id": str(produk["beras"]), "qty": 5}]),    # produk nonaktif
-        data_bm(produk, no_surat_jalan=""),                                         # surat jalan wajib
+        data_bm(produk, items=[]),
+        data_bm(produk, items=[{"produk_id": minyak, "qty": 0}]),
+        data_bm(produk, items=[{"produk_id": minyak, "qty": "5"}]),
+        data_bm(produk, items=[{"produk_id": minyak, "qty": 5}, {"produk_id": minyak, "qty": 3}]),
+        data_bm(produk, items=[{"produk_id": str(produk["beras"]), "qty": 5}]),
+        data_bm(produk, no_surat_jalan=""),
     ]
     for data in salah:
         assert client.post("/api/barang-masuk", json=data).status_code == 400, data
 
     with app.app_context():
-        assert get_db().barang_masuk.count_documents({}) == 0   # tidak ada yang tersimpan
+        assert get_db().barang_masuk.count_documents({}) == 0
         assert get_db().master_produk.find_one({"_id": produk["minyak"]})["stok"] == 0

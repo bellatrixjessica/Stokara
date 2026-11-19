@@ -1,4 +1,3 @@
-"""Test master data: toko, supplier, produk, karyawan (khusus Admin)."""
 from app.db import get_db
 from tests.helper import login
 
@@ -24,8 +23,6 @@ def data_produk(sid, **ubah):
     return data
 
 
-# ---------- Hak akses ----------
-
 def test_selain_admin_tidak_bisa_membuka_master(client):
     login(client, "kepala.gudang")
     assert client.get("/api/master/toko").status_code == 403
@@ -37,8 +34,6 @@ def test_admin_bisa_membuka_semua_halaman_master(client):
     for url in ["/master/produk", "/master/toko", "/master/supplier", "/master/karyawan"]:
         assert client.get(url).status_code == 200
 
-
-# ---------- Toko ----------
 
 def test_tambah_toko_kode_jadi_huruf_besar(client):
     login(client, "admin")
@@ -70,7 +65,7 @@ def test_ubah_dan_nonaktifkan_toko(client, app):
 
     toko = client.get("/api/master/toko").get_json()[0]
     assert toko["nama"] == "Toko Salatiga Baru"
-    assert toko["kode"] == "TK-01"   # kode tidak berubah
+    assert toko["kode"] == "TK-01"
     assert toko["aktif"] is False
 
 
@@ -79,8 +74,6 @@ def test_id_rusak_atau_tidak_ada_404(client):
     assert client.put("/api/master/toko/bukan-id", json={"nama": "A", "alamat": "B"}).status_code == 404
     assert client.put("/api/master/toko/65f000000000000000000000", json={"nama": "A", "alamat": "B"}).status_code == 404
 
-
-# ---------- Supplier & Produk ----------
 
 def test_tambah_produk_stok_awal_nol(client, app):
     login(client, "admin")
@@ -110,18 +103,16 @@ def test_validasi_isian_produk(client, app):
     sid = id_dari_db(app, "master_supplier", "SUP-01")
 
     salah = [
-        data_produk(sid, lead_time_hari="3"),     # angka dikirim sebagai teks
-        data_produk(sid, lead_time_hari=True),    # true bukan angka
-        data_produk(sid, lead_time_hari=0),       # minimal 1 hari
-        data_produk(sid, satuan="KILO"),          # satuan tidak dikenal
-        data_produk(sid, supplier_id="abc"),      # supplier tidak valid
-        data_produk(sid, stok=999),               # stok tidak boleh diisi dari form
+        data_produk(sid, lead_time_hari="3"),
+        data_produk(sid, lead_time_hari=True),
+        data_produk(sid, lead_time_hari=0),
+        data_produk(sid, satuan="KILO"),
+        data_produk(sid, supplier_id="abc"),
+        data_produk(sid, stok=999),
     ]
     for data in salah:
         assert client.post("/api/master/produk", json=data).status_code == 400, data
 
-
-# ---------- Karyawan ----------
 
 def test_daftar_karyawan_tanpa_password_hash(client):
     login(client, "admin")
@@ -164,7 +155,7 @@ def test_reset_password(client, app):
     assert client.post(f"/api/master/karyawan/{user_id}/password", json={"password": "passwordbaru1"}).status_code == 200
 
     client.post("/api/logout")
-    assert login(client, "staff.gudang").status_code == 401              # password lama
+    assert login(client, "staff.gudang").status_code == 401
     assert login(client, "staff.gudang", "passwordbaru1").status_code == 200
 
 

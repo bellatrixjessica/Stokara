@@ -1,4 +1,3 @@
-"""Test laporan periode: rentang tanggal WIB, isi tiap laporan, dan hak akses."""
 from datetime import date, datetime, timezone
 
 import pytest
@@ -29,14 +28,13 @@ def tambah_permintaan(db, nomor, status, diminta, disetujui=None, dikirim=None,
 
 @pytest.fixture
 def data_permintaan(app):
-    """5 permintaan Toko Salatiga + 1 permintaan toko lain, semua di bulan November 2026."""
     with app.app_context():
         db = get_db()
         tambah_permintaan(db, "PRM-1", "DITERIMA", 50, 40, 40)
         tambah_permintaan(db, "PRM-2", "DIKIRIM", 30, 30, 30)
-        tambah_permintaan(db, "PRM-3", "DITOLAK", 20)               # dikirim dihitung 0
-        tambah_permintaan(db, "PRM-4", "DIBATALKAN", 99)            # tidak dihitung
-        tambah_permintaan(db, "PRM-5", "DIAJUKAN", 10)              # belum selesai
+        tambah_permintaan(db, "PRM-3", "DITOLAK", 20)
+        tambah_permintaan(db, "PRM-4", "DIBATALKAN", 99)
+        tambah_permintaan(db, "PRM-5", "DIAJUKAN", 10)
         lain = db.master_toko.insert_one({"kode": "TK-02", "nama": "Toko Ungaran 01", "aktif": True}).inserted_id
         tambah_permintaan(db, "PRM-6", "DITERIMA", 10, 10, 10, toko_id=lain, toko="Toko Ungaran 01")
         return {"toko_lain": str(lain)}
@@ -46,10 +44,7 @@ def ringkasan(hasil):
     return {r["label"]: r["nilai"] for r in hasil["ringkasan"]}
 
 
-# ---------------------------------------------------------------- tanggal
-
 def test_rentang_satu_hari_wib_dalam_utc():
-    # 19 Nov 00.00 WIB = 18 Nov 17.00 UTC, sampai 20 Nov 00.00 WIB = 19 Nov 17.00 UTC
     waktu = rentang_waktu(date(2026, 11, 19), date(2026, 11, 19))
     assert waktu["$gte"] == datetime(2026, 11, 18, 17, tzinfo=timezone.utc)
     assert waktu["$lt"] == datetime(2026, 11, 19, 17, tzinfo=timezone.utc)
@@ -74,15 +69,13 @@ def test_tanggal_kosong_di_api_ditolak(client):
     assert respon.status_code == 400
 
 
-# ---------------------------------------------------------------- laporan permintaan
-
 def test_laporan_permintaan_fill_rate_sama_dengan_aturan_dashboard(client, data_permintaan):
     login(client, "kepala.gudang")
     hasil = client.get("/api/laporan/permintaan?" + PERIODE).get_json()
 
     angka = ringkasan(hasil)
     assert angka["Permintaan"] == 6
-    assert angka["Qty diminta"] == 50 + 30 + 20 + 10   # hanya yang selesai: Diterima, Dikirim, Ditolak
+    assert angka["Qty diminta"] == 50 + 30 + 20 + 10
     assert angka["Qty dikirim"] == 40 + 30 + 0 + 10
     assert angka["Fill rate"] == round(80 / 110 * 100, 1)
 
@@ -96,8 +89,8 @@ def test_laporan_permintaan_fill_rate_sama_dengan_aturan_dashboard(client, data_
 def test_batas_tanggal_mengikuti_wib(client, app):
     with app.app_context():
         db = get_db()
-        tambah_permintaan(db, "PRM-MALAM", "DIAJUKAN", 5, dibuat=waktu_utc(2026, 11, 19, 16))  # 19 Nov 23.00 WIB
-        tambah_permintaan(db, "PRM-BESOK", "DIAJUKAN", 5, dibuat=waktu_utc(2026, 11, 19, 18))  # 20 Nov 01.00 WIB
+        tambah_permintaan(db, "PRM-MALAM", "DIAJUKAN", 5, dibuat=waktu_utc(2026, 11, 19, 16))
+        tambah_permintaan(db, "PRM-BESOK", "DIAJUKAN", 5, dibuat=waktu_utc(2026, 11, 19, 18))
     login(client, "kepala.gudang")
     hasil = client.get("/api/laporan/permintaan?dari=2026-11-19&sampai=2026-11-19").get_json()
     assert [b["nomor"] for b in hasil["baris"]] == ["PRM-MALAM"]
@@ -115,8 +108,6 @@ def test_kepala_toko_hanya_melihat_tokonya_walaupun_mengirim_toko_lain(client, d
     assert {b["toko"] for b in hasil["baris"]} == {"Toko Salatiga 01"}
     assert ringkasan(hasil)["Permintaan"] == 5
 
-
-# ---------------------------------------------------------------- laporan gudang lain
 
 def test_laporan_mutasi_menjumlahkan_per_jenis(client, app):
     with app.app_context():
@@ -147,12 +138,10 @@ def test_laporan_barang_masuk_satu_baris_per_produk(client, app):
 
 def test_laporan_saran_restock_tanpa_tanggal(client, produk):
     login(client, "kepala.gudang")
-    hasil = client.get("/api/laporan/restock").get_json()   # keadaan saat ini, tanggal tidak perlu
+    hasil = client.get("/api/laporan/restock").get_json()
     assert [b["kode"] for b in hasil["baris"]] == ["P-0001", "P-0002"]
     assert ringkasan(hasil)["Produk dipantau"] == 2
 
-
-# ---------------------------------------------------------------- hak akses
 
 def test_kepala_toko_tidak_boleh_laporan_gudang(client):
     login(client, "toko.salatiga01")
@@ -175,7 +164,7 @@ def test_jenis_laporan_tidak_dikenal(client):
 def test_halaman_laporan(client):
     login(client, "kepala.gudang")
     halaman = client.get("/laporan").get_data(as_text=True)
-    assert "laporan.js" in halaman and "Toko Salatiga 01" in halaman   # pilihan toko untuk filter
+    assert "laporan.js" in halaman and "Toko Salatiga 01" in halaman
 
     login(client, "toko.salatiga01")
     halaman = client.get("/laporan").get_data(as_text=True)
