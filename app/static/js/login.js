@@ -51,16 +51,19 @@ webix.ready(function () {
         height: 74,
         template: "<h1>Selamat datang</h1><p>Silakan masuk ke akun Anda.</p>",
       },
+      // Enter di username: pindah ke password (kalau password masih kosong), Enter di password: masuk.
       {
         view: "text", name: "username", label: "Username", labelPosition: "top",
         placeholder: "Masukkan username", required: true, invalidMessage: "Username wajib diisi",
+        on: { onEnter: enterDiUsername },
       },
       {
-        view: "text", type: "password", name: "password", label: "Password", labelPosition: "top",
+        view: "text", type: "password", name: "password", id: "isiPassword", label: "Password", labelPosition: "top",
         placeholder: "Masukkan password", required: true, invalidMessage: "Password wajib diisi",
+        on: { onEnter: masuk },
       },
       { height: 6 },
-      { view: "button", id: "tombolMasuk", value: "Masuk", css: "webix_primary", height: 42, hotkey: "enter", click: masuk },
+      { view: "button", id: "tombolMasuk", value: "Masuk", css: "webix_primary", height: 42, click: masuk },
     ],
   };
 
@@ -82,13 +85,24 @@ webix.ready(function () {
   $$("formLogin").focus("username");
 });
 
+function enterDiUsername() {
+  if ($$("isiPassword").getValue() === "") {
+    $$("isiPassword").focus();
+  } else {
+    masuk(); // password sudah terisi (misalnya diisi otomatis oleh browser)
+  }
+}
+
 async function masuk() {
+  const tombol = $$("tombolMasuk");
+  if (!tombol.isEnabled()) {
+    return; // sedang memproses login, cegah Enter berkali-kali
+  }
   const form = $$("formLogin");
   if (!form.validate()) {
     return;
   }
 
-  const tombol = $$("tombolMasuk");
   tombol.disable();
   const hasil = await api("POST", "/api/login", form.getValues());
   if (!hasil) {
